@@ -102,7 +102,7 @@ contract GTUDAOGovernance {
         admin = msg.sender;
         
         // Deploy core contracts
-        statToken = new StatToken();
+        statToken = new StatToken(address(this));
         voting = new VotingWithWeight(address(statToken));
         worldVerifier = new WorldIDVerifier("gtu_dao_app", "member_verification");
         vlayerVerifier = new VlayerZKVerifier(address(0)); // Will be updated with actual vlayer verifier
@@ -400,7 +400,7 @@ contract GTUDAOGovernance {
     
     /**
      * @dev Get DAO statistics for ETH Prague demo
-     * @return stats DAO statistics
+     * @return totalMembers DAO statistics
      */
     function getDAOStats() external view returns (
         uint256 totalMembers,

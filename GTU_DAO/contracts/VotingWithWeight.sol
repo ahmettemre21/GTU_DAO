@@ -211,7 +211,7 @@ contract VotingWithWeight {
     /**
      * @dev Get proposal details
      * @param proposalId ID of the proposal
-     * @return Basic proposal information
+     * @return id Basic proposal information
      */
     function getProposal(uint256 proposalId) external view returns (
         uint256 id,

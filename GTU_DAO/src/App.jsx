@@ -33,13 +33,55 @@ function App() {
         </main>
 
         {/* Toast Notifications */}
-        <Toaster 
+        <Toaster
           position="top-right"
+          reverseOrder={false}
+          gutter={8}
+          containerClassName=""
+          containerStyle={{}}
           toastOptions={{
+            // Define default options
+            className: '',
             duration: 4000,
             style: {
               background: '#363636',
               color: '#fff',
+              borderRadius: '12px',
+              padding: '16px',
+              fontSize: '14px',
+              fontWeight: '500',
+              boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)',
+            },
+
+            // Custom styling per toast type
+            success: {
+              duration: 3000,
+              iconTheme: {
+                primary: '#10B981',
+                secondary: '#fff',
+              },
+              style: {
+                background: '#10B981',
+              },
+            },
+            error: {
+              duration: 5000,
+              iconTheme: {
+                primary: '#EF4444',
+                secondary: '#fff',
+              },
+              style: {
+                background: '#EF4444',
+              },
+            },
+            loading: {
+              iconTheme: {
+                primary: '#6366F1',
+                secondary: '#fff',
+              },
+              style: {
+                background: '#6366F1',
+              },
             },
           }}
         />

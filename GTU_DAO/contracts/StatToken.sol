@@ -40,7 +40,7 @@ contract StatToken is ERC20, Ownable {
     // Initial STAT amounts by role
     mapping(string => uint256) public roleInitialStats;
     
-    constructor() ERC20("GTU DAO Status Token", "STAT") {
+    constructor(address initialOwner) ERC20("GTU DAO Status Token", "STAT") Ownable(initialOwner) {
         // Set initial STAT amounts for different roles
         roleInitialStats["PRESIDENT"] = 1000;
         roleInitialStats["VICE_PRESIDENT"] = 800;
@@ -151,7 +151,7 @@ contract StatToken is ERC20, Ownable {
      * @dev Override to prevent transfers (soulbound behavior)
      * Only minting (from 0x0) and burning (to 0x0) are allowed
      */
-    function _beforeTokenTransfer(
+    function _update(
         address from,
         address to,
         uint256 amount
@@ -160,7 +160,7 @@ contract StatToken is ERC20, Ownable {
             from == address(0) || to == address(0), 
             "STAT is soulbound and cannot be transferred"
         );
-        super._beforeTokenTransfer(from, to, amount);
+        super._update(from, to, amount);
     }
     
     /**
