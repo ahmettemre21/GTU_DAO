@@ -1,326 +1,342 @@
-import { useState, useEffect } from 'react';
-import { ShieldCheckIcon, CheckCircleIcon, LinkIcon, EyeIcon } from '@heroicons/react/24/outline';
-import { useAccount, useConnect } from 'wagmi';
-import { ConnectButton } from '@rainbow-me/rainbowkit';
-import { useWorldcoin } from '../lib/worldcoin';
-import { useVlayer } from '../lib/vlayer';
-import { useBlockscout } from '../lib/blockscout';
-import { useSmartContracts } from '../hooks/useSmartContracts';
-import toast from 'react-hot-toast';
+import React, { useState } from 'react'
+import { toast } from 'react-hot-toast'
+import { 
+  ShieldCheckIcon, 
+  ExclamationTriangleIcon,
+  CheckCircleIcon,
+  ClockIcon,
+  GlobeAltIcon,
+  LockClosedIcon,
+  EyeIcon
+} from '@heroicons/react/24/outline'
 
-const KYCVerification = ({ user, setUser }) => {
-  const [isVerifying, setIsVerifying] = useState(false);
-  const [kycData, setKycData] = useState(null);
-  const [zkProofGenerated, setZkProofGenerated] = useState(false);
-  const [blockscoutTxHash, setBlockscoutTxHash] = useState(null);
-  
-  const { address, isConnected } = useAccount();
-  const worldcoin = useWorldcoin();
-  const vlayer = useVlayer();
-  const blockscout = useBlockscout();
-  const { contracts } = useSmartContracts();
+const KYCVerification = () => {
+  const [currentStep, setCurrentStep] = useState(1)
+  const [verificationStatus, setVerificationStatus] = useState({
+    worldID: false,
+    zkProof: false,
+    blockscoutTracked: false
+  })
+  const [isLoading, setIsLoading] = useState(false)
 
-  useEffect(() => {
-    if (address && user) {
-      setUser(prev => ({ ...prev, walletAddress: address }));
+  // Mock user data
+  const user = {
+    name: 'Demo User',
+    email: 'demo@gtu.edu.tr',
+    walletAddress: '0x742d35Cc6634C0532925a3b8D34E1C7C796F5032',
+    role: 'MEMBER',
+    kycStatus: 'PENDING'
+  }
+
+  const steps = [
+    {
+      id: 1,
+      title: 'World ID Verification',
+      description: 'World App MiniKit ile kimlik doğrulama (ETH Prague $10k)',
+      icon: GlobeAltIcon,
+      color: 'text-green-600 bg-green-100',
+      status: verificationStatus.worldID ? 'completed' : 'pending'
+    },
+    {
+      id: 2,
+      title: 'Zero-Knowledge Proof',
+      description: 'vlayer ile gizlilik korumalı doğrulama (ETH Prague $10k)',
+      icon: LockClosedIcon,
+      color: 'text-purple-600 bg-purple-100',
+      status: verificationStatus.zkProof ? 'completed' : 'pending'
+    },
+    {
+      id: 3,
+      title: 'Blockscout Tracking',
+      description: 'Blockchain şeffaflığı için işlem kayıt (ETH Prague $20k)',
+      icon: EyeIcon,
+      color: 'text-blue-600 bg-blue-100',
+      status: verificationStatus.blockscoutTracked ? 'completed' : 'pending'
     }
-  }, [address, setUser]);
+  ]
 
-  // ETH Prague Prize Pool Integration - Complete KYC Process
-  const handleVerify = async () => {
-    if (!isConnected) {
-      toast.error('Lütfen önce cüzdanınızı bağlayın');
-      return;
-    }
-
-    setIsVerifying(true);
+  // Mock verification functions
+  const handleWorldIDVerification = async () => {
+    setIsLoading(true)
     try {
-      // 1. World App ($10k Prize Pool) - Identity Verification
-      toast.loading('World ID doğrulaması yapılıyor...');
-      const worldIdResult = await worldcoin.verify(address);
+      // Simulate World ID verification delay
+      await new Promise(resolve => setTimeout(resolve, 2000))
       
-      if (!worldIdResult.success) {
-        throw new Error('World ID doğrulaması başarısız: ' + worldIdResult.error);
-      }
-
-      setKycData(worldIdResult);
-      toast.dismiss();
-      toast.success('World ID doğrulaması başarılı!');
-
-      // 2. vlayer ($10k Prize Pool) - Generate ZK Proof for KYC
-      toast.loading('Zero-knowledge proof oluşturuluyor...');
-      const zkProof = await vlayer.createKYCProof({
-        address: address,
-        verificationLevel: worldIdResult.verification_level,
-        worldIdNullifier: worldIdResult.nullifier_hash,
-        timestamp: Math.floor(Date.now() / 1000)
-      });
-
-      if (!zkProof.success) {
-        throw new Error('ZK proof oluşturulamadı: ' + zkProof.error);
-      }
-
-      setZkProofGenerated(true);
-      toast.dismiss();
-      toast.success('Zero-knowledge proof oluşturuldu!');
-
-      // 3. Verify ZK proof on-chain
-      toast.loading('Blockchain\'de doğrulama yapılıyor...');
-      const onChainVerification = await vlayer.verifyProof(
-        zkProof.proof,
-        zkProof.publicSignals,
-        'kyc-verification'
-      );
-
-      if (!onChainVerification.success) {
-        throw new Error('Blockchain doğrulaması başarısız');
-      }
-
-      setBlockscoutTxHash(onChainVerification.transactionHash);
-      toast.dismiss();
-      toast.success('Blockchain doğrulaması tamamlandı!');
-
-      // 4. Update user status
-      setUser(prev => ({ 
-        ...prev, 
-        kycStatus: 'APPROVED', 
-        verified: true,
-        worldIdVerified: true,
-        zkProofGenerated: true,
-        blockscoutTracked: true,
-        worldIdNullifier: worldIdResult.nullifier_hash,
-        zkProofHash: zkProof.proof,
-        verificationTxHash: onChainVerification.transactionHash
-      }));
-
-      toast.success('KYC doğrulaması tamamen tamamlandı!');
-
+      setVerificationStatus(prev => ({ ...prev, worldID: true }))
+      setCurrentStep(2)
+      toast.success('World ID doğrulaması başarılı! 🌍')
     } catch (error) {
-      console.error('KYC verification error:', error);
-      toast.error('Doğrulama hatası: ' + error.message);
+      toast.error('World ID doğrulaması başarısız')
     } finally {
-      setIsVerifying(false);
+      setIsLoading(false)
     }
-  };
+  }
 
-  // Get Blockscout links for transparency
-  const getBlockscoutUrl = (txHash) => {
-    return blockscout.getTransactionUrl(txHash);
-  };
+  const handleZKProofGeneration = async () => {
+    setIsLoading(true)
+    try {
+      // Simulate ZK proof generation delay
+      await new Promise(resolve => setTimeout(resolve, 3000))
+      
+      setVerificationStatus(prev => ({ ...prev, zkProof: true }))
+      setCurrentStep(3)
+      toast.success('Zero-knowledge proof oluşturuldu! 🔒')
+    } catch (error) {
+      toast.error('ZK proof oluşturulamadı')
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  const handleBlockscoutTracking = async () => {
+    setIsLoading(true)
+    try {
+      // Simulate Blockscout registration delay
+      await new Promise(resolve => setTimeout(resolve, 1500))
+      
+      setVerificationStatus(prev => ({ ...prev, blockscoutTracked: true }))
+      toast.success('Blockscout tracking aktifleştirildi! 🔍')
+    } catch (error) {
+      toast.error('Blockscout tracking başarısız')
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  const getStepStatus = (stepId) => {
+    if (stepId < currentStep) return 'completed'
+    if (stepId === currentStep) return 'current'
+    return 'pending'
+  }
+
+  const allStepsCompleted = Object.values(verificationStatus).every(status => status)
 
   return (
-    <div className="max-w-4xl mx-auto">
-      <div className="text-center mb-8">
-        <ShieldCheckIcon className="w-16 h-16 text-dao-blue mx-auto mb-4" />
-        <h1 className="text-3xl font-bold text-gray-900 mb-2">
-          KYC Doğrulama
-          <span className="ml-2 text-sm bg-gradient-to-r from-green-500 to-blue-500 text-white px-2 py-1 rounded">
-            ETH Prague 2025
-          </span>
+    <div className="max-w-4xl mx-auto space-y-8">
+      {/* Header */}
+      <div className="text-center">
+        <h1 className="text-3xl font-bold text-gray-900 mb-4">
+          KYC Verification System
         </h1>
-        <p className="text-gray-600">
-          World App + vlayer + Blockscout entegrasyonu ile güvenli kimlik doğrulama
+        <p className="text-lg text-gray-600 mb-6">
+          ETH Prague 2025 entegrasyonları ile kapsamlı kimlik doğrulama
         </p>
+        
+        {/* ETH Prague Badge */}
+        <div className="bg-gradient-to-r from-purple-100 to-blue-100 rounded-lg p-4 inline-block mb-8">
+          <div className="flex items-center space-x-3">
+            <span className="text-2xl">🏆</span>
+            <div>
+              <div className="font-bold text-lg text-gray-900">ETH Prague 2025</div>
+              <div className="text-sm text-gray-600">Total Prize Pool: $40,000</div>
+            </div>
+          </div>
+        </div>
       </div>
 
-      {/* Wallet Connection */}
-      {!isConnected && (
-        <div className="card mb-6">
-          <h2 className="text-xl font-semibold text-gray-900 mb-4">1. Cüzdan Bağlantısı</h2>
-          <p className="text-gray-600 mb-4">
-            KYC işlemi için önce cüzdanınızı bağlamanız gerekmektedir.
-          </p>
-          <div className="flex justify-center">
-            <ConnectButton />
+      {/* User Info */}
+      <div className="bg-white rounded-lg shadow-md p-6 border border-gray-200">
+        <h2 className="text-xl font-semibold text-gray-900 mb-4">Kullanıcı Bilgileri</h2>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Ad Soyad</label>
+            <div className="text-gray-900">{user.name}</div>
           </div>
-        </div>
-      )}
-
-      {user?.kycStatus === 'APPROVED' ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {/* Success Status */}
-          <div className="card text-center">
-            <CheckCircleIcon className="w-12 h-12 text-green-600 mx-auto mb-4" />
-            <h2 className="text-xl font-semibold text-gray-900 mb-2">
-              Doğrulama Tamamlandı
-            </h2>
-            <p className="text-gray-600">
-              KYC doğrulamanız başarıyla tamamlanmıştır.
-            </p>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
+            <div className="text-gray-900">{user.email}</div>
           </div>
-
-          {/* World ID Status */}
-          <div className="card">
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="font-medium text-gray-900">World ID</h3>
-              <span className="text-xs bg-green-100 text-green-800 px-2 py-1 rounded">
-                $10k Prize Pool
-              </span>
-            </div>
-            {user.worldIdVerified ? (
-              <div className="flex items-center space-x-2 text-green-600">
-                <CheckCircleIcon className="w-5 h-5" />
-                <span className="text-sm">Doğrulandı</span>
-              </div>
-            ) : (
-              <span className="text-sm text-gray-500">Beklemede</span>
-            )}
-            {user.worldIdNullifier && (
-              <p className="text-xs text-gray-500 mt-2 break-all">
-                Nullifier: {user.worldIdNullifier.slice(0, 20)}...
-              </p>
-            )}
-          </div>
-
-          {/* vlayer ZK Proof Status */}
-          <div className="card">
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="font-medium text-gray-900">ZK Proof</h3>
-              <span className="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded">
-                vlayer $10k
-              </span>
-            </div>
-            {user.zkProofGenerated ? (
-              <div className="flex items-center space-x-2 text-blue-600">
-                <CheckCircleIcon className="w-5 h-5" />
-                <span className="text-sm">Oluşturuldu</span>
-              </div>
-            ) : (
-              <span className="text-sm text-gray-500">Beklemede</span>
-            )}
-            {user.zkProofHash && (
-              <p className="text-xs text-gray-500 mt-2 break-all">
-                Proof: {user.zkProofHash.slice(0, 20)}...
-              </p>
-            )}
-          </div>
-
-          {/* Blockscout Tracking */}
-          <div className="card md:col-span-2 lg:col-span-3">
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="font-medium text-gray-900">Blockchain Transparency</h3>
-              <span className="text-xs bg-purple-100 text-purple-800 px-2 py-1 rounded">
-                Blockscout $20k
-              </span>
-            </div>
-            {user.verificationTxHash ? (
-              <div className="flex items-center justify-between">
-                <div className="flex items-center space-x-2 text-purple-600">
-                  <CheckCircleIcon className="w-5 h-5" />
-                  <span className="text-sm">Blockchain\'de kaydedildi</span>
-                </div>
-                <a
-                  href={getBlockscoutUrl(user.verificationTxHash)}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="flex items-center space-x-1 text-purple-600 hover:text-purple-800 text-sm"
-                >
-                  <EyeIcon className="w-4 h-4" />
-                  <span>İşlemi Görüntüle</span>
-                  <LinkIcon className="w-4 h-4" />
-                </a>
-              </div>
-            ) : (
-              <span className="text-sm text-gray-500">Beklemede</span>
-            )}
-          </div>
-        </div>
-      ) : (
-        <div className="card">
-          <div className="mb-6">
-            <h2 className="text-xl font-semibold text-gray-900 mb-4">
-              ETH Prague 2025 Entegrasyonlu KYC Doğrulama
-            </h2>
-            <p className="text-gray-600 mb-4">
-              Bu KYC sistemi üç ETH Prague 2025 ödül kategorisini birleştiriyor:
-            </p>
-            
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-              {/* World App */}
-              <div className="bg-green-50 border border-green-200 rounded-lg p-4">
-                <div className="flex items-center justify-between mb-2">
-                  <h3 className="font-medium text-green-900">World App</h3>
-                  <span className="text-xs bg-green-100 text-green-800 px-2 py-1 rounded">
-                    $10k
-                  </span>
-                </div>
-                <ul className="text-green-800 text-sm space-y-1">
-                  <li>• World ID MiniKit entegrasyonu</li>
-                  <li>• 23M+ kullanıcı erişimi</li>
-                  <li>• Biometric kimlik doğrulama</li>
-                  <li>• Orb verified hesaplar</li>
-                </ul>
-              </div>
-
-              {/* vlayer */}
-              <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-                <div className="flex items-center justify-between mb-2">
-                  <h3 className="font-medium text-blue-900">vlayer</h3>
-                  <span className="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded">
-                    $10k
-                  </span>
-                </div>
-                <ul className="text-blue-800 text-sm space-y-1">
-                  <li>• Zero-knowledge proof üretimi</li>
-                  <li>• Gizlilik korumalı doğrulama</li>
-                  <li>• On-chain proof verification</li>
-                  <li>• Anonim kimlik kanıtı</li>
-                </ul>
-              </div>
-
-              {/* Blockscout */}
-              <div className="bg-purple-50 border border-purple-200 rounded-lg p-4">
-                <div className="flex items-center justify-between mb-2">
-                  <h3 className="font-medium text-purple-900">Blockscout</h3>
-                  <span className="text-xs bg-purple-100 text-purple-800 px-2 py-1 rounded">
-                    $20k
-                  </span>
-                </div>
-                <ul className="text-purple-800 text-sm space-y-1">
-                  <li>• Block explorer entegrasyonu</li>
-                  <li>• Real-time transaction tracking</li>
-                  <li>• Şeffaf işlem geçmişi</li>
-                  <li>• Contract interaction logs</li>
-                </ul>
-              </div>
-            </div>
-
-            <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-6">
-              <h3 className="font-medium text-yellow-900 mb-2">Doğrulama Süreci:</h3>
-              <ol className="text-yellow-800 text-sm space-y-1">
-                <li>1. World ID ile biometric kimlik doğrulama</li>
-                <li>2. vlayer ile zero-knowledge proof üretimi</li>
-                <li>3. Blockchain'de proof verification</li>
-                <li>4. Blockscout'ta şeffaf kayıt tutma</li>
-              </ol>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Wallet Address</label>
+            <div className="text-gray-900 font-mono text-sm">
+              {user.walletAddress?.slice(0, 10)}...{user.walletAddress?.slice(-8)}
             </div>
           </div>
-
-          <button
-            onClick={handleVerify}
-            disabled={isVerifying || !isConnected}
-            className={`btn-primary w-full flex items-center justify-center space-x-2 ${
-              !isConnected ? 'opacity-50 cursor-not-allowed' : ''
-            }`}
-          >
-            <ShieldCheckIcon className="w-5 h-5" />
-            <span>
-              {isVerifying 
-                ? 'Blockchain doğrulaması yapılıyor...' 
-                : 'ETH Prague Entegrasyonlu KYC Başlat'
-              }
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Rol</label>
+            <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+              {user.role}
             </span>
-          </button>
+          </div>
+        </div>
+      </div>
 
-          {!isConnected && (
-            <p className="text-sm text-gray-500 text-center mt-2">
-              Önce cüzdanınızı bağlayın
-            </p>
-          )}
+      {/* Progress Steps */}
+      <div className="bg-white rounded-lg shadow-md p-6 border border-gray-200">
+        <h2 className="text-xl font-semibold text-gray-900 mb-6">Doğrulama Adımları</h2>
+        
+        <div className="space-y-8">
+          {steps.map((step, index) => {
+            const Icon = step.icon
+            const stepStatus = getStepStatus(step.id)
+            
+            return (
+              <div key={step.id} className="flex items-start space-x-4">
+                {/* Step Icon */}
+                <div className={`flex-shrink-0 w-12 h-12 rounded-lg flex items-center justify-center ${
+                  stepStatus === 'completed' ? 'bg-green-100 text-green-600' :
+                  stepStatus === 'current' ? step.color :
+                  'bg-gray-100 text-gray-400'
+                }`}>
+                  {stepStatus === 'completed' ? (
+                    <CheckCircleIcon className="w-6 h-6" />
+                  ) : stepStatus === 'current' && isLoading ? (
+                    <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-current"></div>
+                  ) : (
+                    <Icon className="w-6 h-6" />
+                  )}
+                </div>
+
+                {/* Step Content */}
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <h3 className={`text-lg font-medium ${
+                        stepStatus === 'completed' ? 'text-green-600' :
+                        stepStatus === 'current' ? 'text-gray-900' :
+                        'text-gray-500'
+                      }`}>
+                        {step.title}
+                      </h3>
+                      <p className="text-sm text-gray-600 mt-1">
+                        {step.description}
+                      </p>
+                    </div>
+
+                    {/* Step Action */}
+                    <div className="ml-4">
+                      {stepStatus === 'completed' ? (
+                        <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-green-100 text-green-800">
+                          Tamamlandı
+                        </span>
+                      ) : stepStatus === 'current' ? (
+                        <button
+                          onClick={() => {
+                            if (step.id === 1) handleWorldIDVerification()
+                            else if (step.id === 2) handleZKProofGeneration()
+                            else if (step.id === 3) handleBlockscoutTracking()
+                          }}
+                          disabled={isLoading}
+                          className={`inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white ${
+                            isLoading 
+                              ? 'bg-gray-400 cursor-not-allowed' 
+                              : 'bg-blue-600 hover:bg-blue-700'
+                          } transition-colors`}
+                        >
+                          {isLoading ? (
+                            <>
+                              <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                              İşleniyor...
+                            </>
+                          ) : (
+                            'Başlat'
+                          )}
+                        </button>
+                      ) : (
+                        <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-gray-100 text-gray-500">
+                          Bekliyor
+                        </span>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Step Details */}
+                  {stepStatus === 'current' && (
+                    <div className="mt-4 p-4 bg-blue-50 rounded-lg">
+                      {step.id === 1 && (
+                        <div className="text-sm text-blue-800">
+                          <p className="font-medium mb-2">World ID ile doğrulama:</p>
+                          <ul className="space-y-1 text-blue-700">
+                            <li>• Unique human verification</li>
+                            <li>• Sybil attack protection</li>
+                            <li>• ORB or Device level verification</li>
+                            <li>• MiniKit integration demo</li>
+                          </ul>
+                        </div>
+                      )}
+                      {step.id === 2 && (
+                        <div className="text-sm text-purple-800">
+                          <p className="font-medium mb-2">Zero-knowledge proof oluşturma:</p>
+                          <ul className="space-y-1 text-purple-700">
+                            <li>• Privacy-preserving verification</li>
+                            <li>• vlayer protocol integration</li>
+                            <li>• Anonymous voting capability</li>
+                            <li>• ZK-SNARK proof generation</li>
+                          </ul>
+                        </div>
+                      )}
+                      {step.id === 3 && (
+                        <div className="text-sm text-blue-800">
+                          <p className="font-medium mb-2">Blockscout tracking:</p>
+                          <ul className="space-y-1 text-blue-700">
+                            <li>• Transaction transparency</li>
+                            <li>• Enhanced block explorer</li>
+                            <li>• Real-time monitoring</li>
+                            <li>• Detailed analytics</li>
+                          </ul>
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </div>
+              </div>
+            )
+          })}
+        </div>
+      </div>
+
+      {/* Completion Status */}
+      {allStepsCompleted && (
+        <div className="bg-gradient-to-r from-green-50 to-emerald-50 border border-green-200 rounded-lg p-6">
+          <div className="flex items-center space-x-3">
+            <CheckCircleIcon className="w-8 h-8 text-green-600" />
+            <div>
+              <h3 className="text-lg font-semibold text-green-800">
+                🎉 KYC Doğrulaması Tamamlandı!
+              </h3>
+              <p className="text-green-700 mt-1">
+                Tüm ETH Prague 2025 entegrasyonları başarıyla aktifleştirildi. 
+                Artık DAO'da tam yetkilerle katılım sağlayabilirsiniz.
+              </p>
+            </div>
+          </div>
+          
+          <div className="mt-4 flex space-x-4">
+            <button className="bg-green-600 text-white px-6 py-2 rounded-lg hover:bg-green-700 transition-colors">
+              Dashboard'a Git
+            </button>
+            <button className="bg-white text-green-600 border border-green-300 px-6 py-2 rounded-lg hover:bg-green-50 transition-colors">
+              Doğrulama Sertifikası İndir
+            </button>
+          </div>
         </div>
       )}
-    </div>
-  );
-};
 
-export default KYCVerification; 
+      {/* ETH Prague Integration Details */}
+      <div className="bg-gradient-to-r from-purple-50 to-blue-50 rounded-lg p-6">
+        <h3 className="text-lg font-semibold text-gray-900 mb-4">
+          ETH Prague 2025 Integration Benefits
+        </h3>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="text-center">
+            <div className="text-2xl mb-2">🌍</div>
+            <div className="font-medium text-gray-900">World App</div>
+            <div className="text-sm text-gray-600">$10k Prize Pool</div>
+          </div>
+          <div className="text-center">
+            <div className="text-2xl mb-2">🔒</div>
+            <div className="font-medium text-gray-900">vlayer</div>
+            <div className="text-sm text-gray-600">$10k Prize Pool</div>
+          </div>
+          <div className="text-center">
+            <div className="text-2xl mb-2">🔍</div>
+            <div className="font-medium text-gray-900">Blockscout</div>
+            <div className="text-sm text-gray-600">$20k Prize Pool</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+export default KYCVerification 

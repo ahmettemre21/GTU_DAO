@@ -1,192 +1,140 @@
-import { useState } from 'react';
-import { Link, useLocation } from 'react-router-dom';
-import { 
-  HomeIcon, 
-  ChartBarIcon, 
-  DocumentTextIcon, 
-  HandRaisedIcon,
-  UserGroupIcon,
-  CogIcon,
-  ShieldCheckIcon
-} from '@heroicons/react/24/outline';
-import { verifyWithWorldID } from '../lib/minikit';
-import toast from 'react-hot-toast';
+import React, { useState } from 'react'
+import { Link, useLocation } from 'react-router-dom'
+import { Bars3Icon, XMarkIcon } from '@heroicons/react/24/outline'
 
-const Navbar = ({ user, setUser }) => {
-  const location = useLocation();
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
+const Navbar = () => {
+  const [isMenuOpen, setIsMenuOpen] = useState(false)
+  const location = useLocation()
 
-  const navigation = [
-    { name: 'Ana Sayfa', href: '/', icon: HomeIcon },
-    { name: 'Dashboard', href: '/dashboard', icon: ChartBarIcon },
-    { name: 'Öneriler', href: '/proposals', icon: DocumentTextIcon },
-    { name: 'Oylamalar', href: '/voting', icon: HandRaisedIcon },
-    { name: 'Başvurular', href: '/applications', icon: UserGroupIcon },
-  ];
-
-  // Admin paneli için özel yetki kontrolü
-  if (user?.role === 'PRESIDENT' || user?.role === 'CORE_TEAM') {
-    navigation.push({ name: 'Admin Panel', href: '/admin', icon: CogIcon });
+  // Mock user data for demo
+  const user = {
+    name: 'Demo User',
+    email: 'demo@gtu.edu.tr',
+    role: 'MEMBER',
+    isConnected: true
   }
 
-  const handleWorldIDVerification = async () => {
-    try {
-      const result = await verifyWithWorldID();
-      if (result.success) {
-        toast.success('World ID doğrulaması başarılı!');
-        // KYC durumunu güncelle
-        setUser(prev => ({ ...prev, kycStatus: 'APPROVED', verified: true }));
-      } else {
-        toast.error('World ID doğrulaması başarısız: ' + result.error);
-      }
-    } catch (error) {
-      toast.error('Doğrulama hatası: ' + error.message);
-    }
-  };
+  const navigation = [
+    { name: 'Ana Sayfa', href: '/', icon: '🏠' },
+    { name: 'Dashboard', href: '/dashboard', icon: '📊' },
+    { name: 'Proposals', href: '/proposals', icon: '📋' },
+    { name: 'Voting', href: '/voting', icon: '🗳️' },
+    { name: 'Applications', href: '/applications', icon: '📝' },
+    { name: 'KYC Verification', href: '/kyc', icon: '🔐' },
+    { name: 'Admin Panel', href: '/admin', icon: '⚙️' }
+  ]
 
-  const getRoleColor = (role) => {
-    switch (role) {
-      case 'PRESIDENT': return 'bg-purple-100 text-purple-800';
-      case 'CORE_TEAM': return 'bg-blue-100 text-blue-800';
-      case 'ADMIN_CANDIDATE': return 'bg-orange-100 text-orange-800';
-      default: return 'bg-green-100 text-green-800';
-    }
-  };
-
-  const getRoleText = (role) => {
-    switch (role) {
-      case 'PRESIDENT': return 'Başkan';
-      case 'CORE_TEAM': return 'Çekirdek Ekip';
-      case 'ADMIN_CANDIDATE': return 'Aday';
-      case 'MEMBER': return 'Üye';
-      default: return role;
-    }
-  };
+  const isActive = (path) => location.pathname === path
 
   return (
     <nav className="bg-white shadow-lg border-b border-gray-200">
-      <div className="container mx-auto px-4">
-        <div className="flex justify-between items-center h-16">
-          {/* Logo ve Başlık */}
-          <div className="flex items-center space-x-4">
-            <Link to="/" className="flex items-center space-x-2">
-              <div className="w-8 h-8 bg-gradient-to-r from-dao-blue to-dao-purple rounded-lg flex items-center justify-center">
-                <span className="text-white font-bold text-sm">G</span>
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="flex justify-between h-16">
+          {/* Logo */}
+          <div className="flex items-center">
+            <Link to="/" className="flex items-center space-x-3">
+              <div className="w-8 h-8 bg-gradient-to-br from-blue-600 to-purple-600 rounded-lg flex items-center justify-center">
+                <span className="text-white font-bold text-sm">GTU</span>
               </div>
-              <span className="text-xl font-bold text-gray-800">GTU DAO</span>
+              <div>
+                <div className="text-xl font-bold text-gray-900">GTU DAO</div>
+                <div className="text-xs text-gray-500">ETH Prague 2025</div>
+              </div>
             </Link>
           </div>
 
           {/* Desktop Navigation */}
-          <div className="hidden md:flex space-x-1">
-            {navigation.map((item) => {
-              const Icon = item.icon;
-              const isActive = location.pathname === item.href;
-              
-              return (
-                <Link
-                  key={item.name}
-                  to={item.href}
-                  className={`flex items-center space-x-2 px-3 py-2 rounded-lg text-sm font-medium transition-colors duration-200 ${
-                    isActive
-                      ? 'bg-dao-blue text-white'
-                      : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
-                  }`}
-                >
-                  <Icon className="w-4 h-4" />
-                  <span>{item.name}</span>
-                </Link>
-              );
-            })}
+          <div className="hidden md:flex items-center space-x-8">
+            {navigation.map((item) => (
+              <Link
+                key={item.name}
+                to={item.href}
+                className={`flex items-center space-x-2 px-3 py-2 rounded-md text-sm font-medium transition-colors duration-200 ${
+                  isActive(item.href)
+                    ? 'bg-blue-100 text-blue-700'
+                    : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
+                }`}
+              >
+                <span>{item.icon}</span>
+                <span>{item.name}</span>
+              </Link>
+            ))}
           </div>
 
-          {/* Kullanıcı Bilgileri */}
-          <div className="flex items-center space-x-4">
-            {user ? (
-              <div className="flex items-center space-x-3">
-                {/* KYC Durumu */}
-                {user.kycStatus !== 'APPROVED' && (
-                  <button
-                    onClick={handleWorldIDVerification}
-                    className="flex items-center space-x-2 bg-orange-100 text-orange-800 px-3 py-1 rounded-full text-xs font-medium hover:bg-orange-200 transition-colors"
-                  >
-                    <ShieldCheckIcon className="w-4 h-4" />
-                    <span>World ID Doğrula</span>
-                  </button>
-                )}
+          {/* User Profile */}
+          <div className="hidden md:flex items-center space-x-4">
+            {/* ETH Prague Badge */}
+            <div className="bg-gradient-to-r from-purple-100 to-blue-100 px-3 py-1 rounded-full">
+              <span className="text-xs font-semibold text-purple-700">🏆 $40k Prize Pool</span>
+            </div>
 
-                {/* Rol Badge */}
-                <span className={`px-3 py-1 rounded-full text-xs font-medium ${getRoleColor(user.role)}`}>
-                  {getRoleText(user.role)}
-                </span>
-
-                {/* Kullanıcı Profili */}
-                <div className="flex items-center space-x-2">
-                  <div className="text-right hidden sm:block">
-                    <p className="text-sm font-medium text-gray-900">{user.name}</p>
-                    <p className="text-xs text-gray-500">
-                      {user.walletAddress?.slice(0, 6)}...{user.walletAddress?.slice(-4)}
-                    </p>
-                  </div>
-                  <div className="w-8 h-8 bg-gradient-to-r from-dao-blue to-dao-purple rounded-full flex items-center justify-center">
-                    <span className="text-white text-sm font-medium">
-                      {user.name?.charAt(0).toUpperCase()}
-                    </span>
-                  </div>
-                </div>
+            {/* Mock Wallet Connection */}
+            <div className="flex items-center space-x-3 bg-green-50 px-4 py-2 rounded-lg border border-green-200">
+              <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
+              <div className="text-sm">
+                <div className="font-medium text-gray-900">{user.name}</div>
+                <div className="text-xs text-gray-500">Demo Mode</div>
               </div>
-            ) : (
-              <button
-                onClick={handleWorldIDVerification}
-                className="btn-primary flex items-center space-x-2"
-              >
-                <ShieldCheckIcon className="w-4 h-4" />
-                <span>World ID ile Giriş</span>
-              </button>
-            )}
+            </div>
+          </div>
 
-            {/* Mobile Menu Button */}
+          {/* Mobile menu button */}
+          <div className="md:hidden flex items-center">
             <button
               onClick={() => setIsMenuOpen(!isMenuOpen)}
-              className="md:hidden p-2 rounded-lg text-gray-600 hover:text-gray-900 hover:bg-gray-100"
+              className="inline-flex items-center justify-center p-2 rounded-md text-gray-400 hover:text-gray-500 hover:bg-gray-100"
             >
-              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
-              </svg>
+              {isMenuOpen ? (
+                <XMarkIcon className="block h-6 w-6" />
+              ) : (
+                <Bars3Icon className="block h-6 w-6" />
+              )}
             </button>
           </div>
         </div>
+      </div>
 
-        {/* Mobile Navigation */}
-        {isMenuOpen && (
-          <div className="md:hidden border-t border-gray-200 py-4">
-            <div className="space-y-2">
-              {navigation.map((item) => {
-                const Icon = item.icon;
-                const isActive = location.pathname === item.href;
-                
-                return (
-                  <Link
-                    key={item.name}
-                    to={item.href}
-                    onClick={() => setIsMenuOpen(false)}
-                    className={`flex items-center space-x-3 px-4 py-3 rounded-lg text-sm font-medium transition-colors duration-200 ${
-                      isActive
-                        ? 'bg-dao-blue text-white'
-                        : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
-                    }`}
-                  >
-                    <Icon className="w-5 h-5" />
-                    <span>{item.name}</span>
-                  </Link>
-                );
-              })}
+      {/* Mobile menu */}
+      {isMenuOpen && (
+        <div className="md:hidden">
+          <div className="px-2 pt-2 pb-3 space-y-1 sm:px-3 bg-gray-50">
+            {navigation.map((item) => (
+              <Link
+                key={item.name}
+                to={item.href}
+                onClick={() => setIsMenuOpen(false)}
+                className={`flex items-center space-x-2 px-3 py-2 rounded-md text-base font-medium ${
+                  isActive(item.href)
+                    ? 'bg-blue-100 text-blue-700'
+                    : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
+                }`}
+              >
+                <span>{item.icon}</span>
+                <span>{item.name}</span>
+              </Link>
+            ))}
+            
+            {/* Mobile User Info */}
+            <div className="border-t border-gray-200 pt-4 mt-4">
+              <div className="flex items-center px-3 py-2">
+                <div className="flex-shrink-0">
+                  <div className="w-8 h-8 bg-gray-300 rounded-full flex items-center justify-center">
+                    <span className="text-sm font-medium text-gray-700">
+                      {user.name.charAt(0)}
+                    </span>
+                  </div>
+                </div>
+                <div className="ml-3">
+                  <div className="text-base font-medium text-gray-800">{user.name}</div>
+                  <div className="text-sm text-gray-500">Demo Mode</div>
+                </div>
+              </div>
             </div>
           </div>
-        )}
-      </div>
+        </div>
+      )}
     </nav>
-  );
-};
+  )
+}
 
-export default Navbar; 
+export default Navbar 

@@ -1,5 +1,6 @@
-import { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import React, { useState, useEffect } from 'react'
+import { Link } from 'react-router-dom'
+import { toast } from 'react-hot-toast'
 import { 
   DocumentTextIcon, 
   HandRaisedIcon,
@@ -10,29 +11,38 @@ import {
   PlusIcon,
   ArrowTrendingUpIcon,
   StarIcon,
-  TrophyIcon
-} from '@heroicons/react/24/outline';
-import StatDisplay from '../components/StatDisplay';
-import statTokenService from '../lib/statToken';
+  TrophyIcon,
+  GlobeAltIcon,
+  LockClosedIcon,
+  EyeIcon
+} from '@heroicons/react/24/outline'
+import { EthPragueService } from '../services/ethPragueIntegrations'
 
-const Dashboard = ({ user }) => {
+const Dashboard = () => {
+  // Mock user data
+  const user = {
+    name: 'Demo User',
+    email: 'demo@gtu.edu.tr',
+    role: 'MEMBER',
+    walletAddress: '0x742d35Cc6634C0532925a3b8D34E1C7C796F5032',
+    isConnected: true
+  }
+
   const [userStats, setUserStats] = useState({
     myProposals: 0,
     myVotes: 0,
     pendingActions: 0,
     membershipDays: 0,
-  });
+  })
 
-  const [statData, setStatData] = useState(null);
-  const [recentActivity, setRecentActivity] = useState([]);
-  const [pendingItems, setPendingItems] = useState([]);
-  const [leaderboard, setLeaderboard] = useState([]);
+  const [ethPragueData, setEthPragueData] = useState(null)
+  const [recentActivity, setRecentActivity] = useState([])
+  const [pendingItems, setPendingItems] = useState([])
 
   useEffect(() => {
-    if (user) {
-      loadDashboardData();
-    }
-  }, [user]);
+    loadDashboardData()
+    initializeEthPrague()
+  }, [])
 
   const loadDashboardData = async () => {
     // Demo veri yükle
@@ -42,414 +52,366 @@ const Dashboard = ({ user }) => {
         myVotes: 12,
         pendingActions: 2,
         membershipDays: 180,
-      });
+      })
 
       setRecentActivity([
         { 
           id: 1, 
           type: 'vote', 
-          title: 'Blockchain Workshop Organizasyonu', 
-          action: 'EVET oyunu verdin (650 STAT ağırlığında)',
+          title: 'ETH Prague entegrasyonu tamamlandı', 
+          action: 'Blockscout verification başarılı',
           time: '2 saat önce',
           status: 'completed',
-          statReward: 10
+          platform: 'blockscout'
         },
         { 
           id: 2, 
           type: 'proposal', 
-          title: 'ETH Prague Katılım Talebi', 
-          action: 'Öneri sundun',
+          title: 'World ID doğrulaması', 
+          action: 'MiniKit entegrasyonu aktif',
           time: '1 gün önce',
           status: 'active',
-          statReward: 50
+          platform: 'worldapp'
         },
         { 
           id: 3, 
           type: 'stat_earned', 
-          title: 'Etkinlik Organizasyonu', 
-          action: '100 STAT kazandın',
+          title: 'vlayer ZK proof oluşturuldu', 
+          action: 'Web proof verification tamamlandı',
           time: '3 gün önce',
           status: 'completed',
-          statReward: 100
+          platform: 'vlayer'
         },
-      ]);
+      ])
 
       setPendingItems([
         {
           id: 1,
           type: 'vote',
-          title: 'Kulüp Logo Tasarımı Seçimi',
-          description: 'Tasarım ekibinin hazırladığı 3 farklı logo arasından seçim yapılması gerekiyor.',
+          title: 'ETH Prague 2025 Final Submission',
+          description: 'Hackathon final sunumu için son kontroller ve ödül başvuruları.',
           deadline: '2 gün kaldı',
           urgent: true,
-          requiredStat: 100,
-          yourVotingPower: 650
+          platform: 'eth-prague'
         },
         {
           id: 2,
           type: 'proposal_review',
-          title: 'Finans Raporu İncelemesi',
-          description: 'Geçen ay yapılan harcamaların onaylanması için Core Team oylaması.',
+          title: 'Blockscout Merits Sistemi',
+          description: 'Merits entegrasyonu için community voting gerekiyor.',
           deadline: '5 gün kaldı',
           urgent: false,
-          requiredStat: 600,
-          yourVotingPower: 650
+          platform: 'blockscout'
         },
-      ]);
-    }, 1000);
+      ])
+    }, 1000)
+  }
 
-    // STAT verilerini yükle
-    if (user?.id) {
-      try {
-        const stats = await statTokenService.getUserStats(user.id);
-        setStatData(stats);
-
-        // Leaderboard yükle
-        const leaders = await statTokenService.getLeaderboard(5);
-        setLeaderboard(leaders);
-      } catch (error) {
-        console.error('Error loading STAT data:', error);
+  const initializeEthPrague = async () => {
+    try {
+      const result = await EthPragueService.initializeAll()
+      setEthPragueData(result)
+      
+      if (result.success) {
+        toast.success('🏆 ETH Prague dashboard yüklendi!')
       }
+    } catch (error) {
+      console.error('ETH Prague initialization error:', error)
+      toast.error('ETH Prague verileri yüklenemedi')
     }
-  };
+  }
 
   const getStatusIcon = (status) => {
     switch (status) {
-      case 'completed': return <CheckCircleIcon className="w-4 h-4 text-green-600" />;
-      case 'active': return <ClockIcon className="w-4 h-4 text-blue-600" />;
-      case 'pending': return <ExclamationTriangleIcon className="w-4 h-4 text-yellow-600" />;
-      default: return null;
+      case 'completed': return <CheckCircleIcon className="w-4 h-4 text-green-600" />
+      case 'active': return <ClockIcon className="w-4 h-4 text-blue-600" />
+      case 'pending': return <ExclamationTriangleIcon className="w-4 h-4 text-yellow-600" />
+      default: return null
     }
-  };
+  }
 
   const getActivityIcon = (type) => {
     switch (type) {
-      case 'proposal': return DocumentTextIcon;
-      case 'vote': return HandRaisedIcon;
-      case 'application': return UserGroupIcon;
-      case 'stat_earned': return StarIcon;
-      default: return DocumentTextIcon;
+      case 'proposal': return DocumentTextIcon
+      case 'vote': return HandRaisedIcon
+      case 'application': return UserGroupIcon
+      case 'stat_earned': return StarIcon
+      default: return DocumentTextIcon
     }
-  };
+  }
 
   const getActivityColor = (type) => {
     switch (type) {
-      case 'proposal': return 'text-blue-600 bg-blue-100';
-      case 'vote': return 'text-green-600 bg-green-100';
-      case 'application': return 'text-purple-600 bg-purple-100';
-      case 'stat_earned': return 'text-yellow-600 bg-yellow-100';
-      default: return 'text-gray-600 bg-gray-100';
+      case 'proposal': return 'text-blue-600 bg-blue-100'
+      case 'vote': return 'text-green-600 bg-green-100'
+      case 'application': return 'text-purple-600 bg-purple-100'
+      case 'stat_earned': return 'text-yellow-600 bg-yellow-100'
+      default: return 'text-gray-600 bg-gray-100'
     }
-  };
+  }
 
-  if (!user) {
-    return (
-      <div className="text-center py-16">
-        <ExclamationTriangleIcon className="w-16 h-16 text-gray-400 mx-auto mb-4" />
-        <h2 className="text-2xl font-bold text-gray-900 mb-2">Giriş Gerekli</h2>
-        <p className="text-gray-600 mb-6">Dashboard'a erişmek için World ID ile giriş yapmanız gerekiyor.</p>
-        <Link to="/" className="btn-primary">
-          Ana Sayfaya Dön
-        </Link>
-      </div>
-    );
+  const getPlatformIcon = (platform) => {
+    switch (platform) {
+      case 'blockscout': return <EyeIcon className="w-4 h-4" />
+      case 'worldapp': return <GlobeAltIcon className="w-4 h-4" />
+      case 'vlayer': return <LockClosedIcon className="w-4 h-4" />
+      default: return <StarIcon className="w-4 h-4" />
+    }
   }
 
   return (
     <div className="space-y-8">
-      {/* Welcome Section with STAT Display */}
-      <div className="card bg-gradient-to-r from-dao-blue to-dao-purple text-white">
+      {/* Welcome Section with ETH Prague Stats */}
+      <div className="bg-gradient-to-r from-blue-600 via-purple-600 to-indigo-600 rounded-xl p-6 text-white">
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-2xl font-bold mb-2">
               Hoş geldin, {user.name}! 👋
             </h1>
-            <p className="opacity-90 mb-3">
+            <p className="text-blue-100 mb-3">
               {user.role === 'PRESIDENT' ? 'Başkan' : 
                user.role === 'CORE_TEAM' ? 'Core Team Üyesi' : 'Kulüp Üyesi'} • 
               {userStats.membershipDays} gündür üyesin
             </p>
-            {/* STAT Display in header */}
-            {statData && (
-              <div className="flex items-center space-x-4">
-                <div className="bg-white bg-opacity-20 rounded-lg px-3 py-2">
-                  <div className="flex items-center space-x-2">
-                    <StarIcon className="w-5 h-5" />
-                    <span className="font-bold">{statData.balance} STAT</span>
-                  </div>
-                  <div className="text-xs opacity-80">Oy Gücün: {statData.balance}x</div>
+            
+            {/* ETH Prague Status */}
+            <div className="flex items-center space-x-4">
+              <div className="bg-white/20 rounded-lg px-3 py-2">
+                <div className="flex items-center space-x-2">
+                  <TrophyIcon className="w-5 h-5" />
+                  <span className="font-bold">ETH Prague 2025</span>
                 </div>
-                <div className="bg-white bg-opacity-20 rounded-lg px-3 py-2">
-                  <div className="flex items-center space-x-2">
-                    <TrophyIcon className="w-5 h-5" />
-                    <span className="font-bold">{statTokenService.getStatTier(statData.balance).name}</span>
-                  </div>
-                  <div className="text-xs opacity-80">Tier Seviye</div>
-                </div>
+                <div className="text-xs text-blue-100">$40k Prize Pool</div>
               </div>
-            )}
+              <div className="bg-white/20 rounded-lg px-3 py-2">
+                <div className="flex items-center space-x-2">
+                  <span className="font-bold">
+                    {ethPragueData?.success ? '✅ Aktif' : '🔄 Yükleniyor'}
+                  </span>
+                </div>
+                <div className="text-xs text-blue-100">3 Platform</div>
+              </div>
+            </div>
           </div>
           <div className="text-right">
             <div className="text-3xl font-bold">{userStats.pendingActions}</div>
-            <div className="text-sm opacity-90">Bekleyen İşlem</div>
+            <div className="text-sm text-blue-100">Bekleyen İşlem</div>
           </div>
         </div>
       </div>
 
-      {/* STAT Dashboard Card */}
-      {statData && (
-        <div className="card">
-          <div className="flex items-center justify-between mb-6">
-            <h3 className="text-xl font-semibold text-gray-900 flex items-center space-x-2">
-              <StarIcon className="w-6 h-6 text-yellow-500" />
-              <span>STAT Token Dashboard</span>
-            </h3>
-            <Link to="/stat-leaderboard" className="text-dao-blue hover:text-blue-700 text-sm font-medium">
-              Liderlik Tablosu →
-            </Link>
+      {/* ETH Prague Integration Status */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div className="bg-white rounded-xl shadow-lg p-6 border border-gray-200">
+          <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center space-x-3">
+              <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
+                <EyeIcon className="w-5 h-5 text-blue-600" />
+              </div>
+              <div>
+                <h3 className="font-semibold text-gray-900">Blockscout</h3>
+                <p className="text-sm text-gray-600">$20k Prize Pool</p>
+              </div>
+            </div>
+            <span className="bg-green-100 text-green-800 text-xs px-2 py-1 rounded-full">
+              ✅ Aktif
+            </span>
           </div>
-          
-          <StatDisplay user={user} showDetails={true} />
+          <div className="space-y-2 text-sm text-gray-600">
+            <div>• Transaction tracking</div>
+            <div>• Smart contract verification</div>
+            <div>• Merits & Analytics</div>
+          </div>
         </div>
-      )}
 
-      {/* Quick Stats with STAT Integration */}
+        <div className="bg-white rounded-xl shadow-lg p-6 border border-gray-200">
+          <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center space-x-3">
+              <div className="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center">
+                <GlobeAltIcon className="w-5 h-5 text-green-600" />
+              </div>
+              <div>
+                <h3 className="font-semibold text-gray-900">World App</h3>
+                <p className="text-sm text-gray-600">$10k Prize Pool</p>
+              </div>
+            </div>
+            <span className="bg-green-100 text-green-800 text-xs px-2 py-1 rounded-full">
+              ✅ Aktif
+            </span>
+          </div>
+          <div className="space-y-2 text-sm text-gray-600">
+            <div>• World ID verification</div>
+            <div>• MiniKit integration</div>
+            <div>• WLD/USDC payments</div>
+          </div>
+        </div>
+
+        <div className="bg-white rounded-xl shadow-lg p-6 border border-gray-200">
+          <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center space-x-3">
+              <div className="w-10 h-10 bg-purple-100 rounded-lg flex items-center justify-center">
+                <LockClosedIcon className="w-5 h-5 text-purple-600" />
+              </div>
+              <div>
+                <h3 className="font-semibold text-gray-900">vlayer</h3>
+                <p className="text-sm text-gray-600">$10k Prize Pool</p>
+              </div>
+            </div>
+            <span className="bg-green-100 text-green-800 text-xs px-2 py-1 rounded-full">
+              ✅ Aktif
+            </span>
+          </div>
+          <div className="space-y-2 text-sm text-gray-600">
+            <div>• Zero-knowledge proofs</div>
+            <div>• Web & Email proofs</div>
+            <div>• Time travel & Teleport</div>
+          </div>
+        </div>
+      </div>
+
+      {/* Stats Grid */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-6">
-        <div className="card text-center">
-          <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center mx-auto mb-4">
-            <DocumentTextIcon className="w-6 h-6 text-blue-600" />
+        <div className="bg-white rounded-xl shadow-lg p-6 border border-gray-200">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm font-medium text-gray-600">Proposallarım</p>
+              <p className="text-2xl font-bold text-gray-900">{userStats.myProposals}</p>
+            </div>
+            <DocumentTextIcon className="w-8 h-8 text-blue-600" />
           </div>
-          <h3 className="text-2xl font-bold text-gray-900 mb-1">{userStats.myProposals}</h3>
-          <p className="text-gray-600">Önerilerim</p>
-          <div className="text-xs text-blue-600 mt-1">+{userStats.myProposals * 50} STAT kazandın</div>
         </div>
 
-        <div className="card text-center">
-          <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center mx-auto mb-4">
-            <HandRaisedIcon className="w-6 h-6 text-green-600" />
+        <div className="bg-white rounded-xl shadow-lg p-6 border border-gray-200">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm font-medium text-gray-600">Oy Sayım</p>
+              <p className="text-2xl font-bold text-gray-900">{userStats.myVotes}</p>
+            </div>
+            <HandRaisedIcon className="w-8 h-8 text-green-600" />
           </div>
-          <h3 className="text-2xl font-bold text-gray-900 mb-1">{userStats.myVotes}</h3>
-          <p className="text-gray-600">Verdiğim Oy</p>
-          <div className="text-xs text-green-600 mt-1">+{userStats.myVotes * 10} STAT kazandın</div>
         </div>
 
-        <div className="card text-center">
-          <div className="w-12 h-12 bg-yellow-100 rounded-lg flex items-center justify-center mx-auto mb-4">
-            <StarIcon className="w-6 h-6 text-yellow-600" />
+        <div className="bg-white rounded-xl shadow-lg p-6 border border-gray-200">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm font-medium text-gray-600">Bekleyen İşlem</p>
+              <p className="text-2xl font-bold text-gray-900">{userStats.pendingActions}</p>
+            </div>
+            <ClockIcon className="w-8 h-8 text-yellow-600" />
           </div>
-          <h3 className="text-2xl font-bold text-gray-900 mb-1">
-            {statData ? statData.balance : '---'}
-          </h3>
-          <p className="text-gray-600">STAT Bakiye</p>
-          <div className="text-xs text-yellow-600 mt-1">Oy gücün: {statData?.balance || 0}x</div>
         </div>
 
-        <div className="card text-center">
-          <div className="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center mx-auto mb-4">
-            <TrophyIcon className="w-6 h-6 text-purple-600" />
+        <div className="bg-white rounded-xl shadow-lg p-6 border border-gray-200">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm font-medium text-gray-600">Üyelik Günü</p>
+              <p className="text-2xl font-bold text-gray-900">{userStats.membershipDays}</p>
+            </div>
+            <UserGroupIcon className="w-8 h-8 text-purple-600" />
           </div>
-          <h3 className="text-2xl font-bold text-gray-900 mb-1">
-            {statData ? statTokenService.getStatTier(statData.balance).name : '---'}
-          </h3>
-          <p className="text-gray-600">STAT Tier</p>
-          <div className="text-xs text-purple-600 mt-1">Prestij seviyesi</div>
         </div>
       </div>
 
-      {/* Quick Actions & Pending Items */}
+      {/* Recent Activity & Pending Items */}
       <div className="grid lg:grid-cols-2 gap-8">
-        {/* Quick Actions */}
-        <div className="card">
-          <h3 className="text-xl font-semibold text-gray-900 mb-6">Hızlı İşlemler</h3>
-          
+        {/* Recent Activity */}
+        <div className="bg-white rounded-xl shadow-lg p-6 border border-gray-200">
+          <div className="flex items-center justify-between mb-6">
+            <h3 className="text-xl font-semibold text-gray-900">Son Aktiviteler</h3>
+            <Link to="/proposals" className="text-blue-600 hover:text-blue-800 text-sm font-medium">
+              Tümünü Gör →
+            </Link>
+          </div>
+
           <div className="space-y-4">
-            <Link 
-              to="/proposals?action=new" 
-              className="flex items-center space-x-4 p-4 border border-gray-200 rounded-lg hover:border-dao-blue hover:bg-blue-50 transition-colors group"
-            >
-              <div className="w-10 h-10 bg-blue-100 group-hover:bg-blue-200 rounded-lg flex items-center justify-center">
-                <PlusIcon className="w-5 h-5 text-blue-600" />
-              </div>
-              <div className="flex-1">
-                <h4 className="font-medium text-gray-900">Yeni Öneri Oluştur</h4>
-                <p className="text-sm text-gray-600">Kulüp için yeni bir öneri sun</p>
-                <div className="text-xs text-blue-600 mt-1">+50 STAT kazanacaksın</div>
-              </div>
-              <div className="text-xs text-gray-500">
-                {statTokenService.canCreateProposal(statData?.balance || 0) ? 
-                  '✅ Uygun' : '❌ 50+ STAT gerekli'}
-              </div>
-            </Link>
-
-            <Link 
-              to="/voting" 
-              className="flex items-center space-x-4 p-4 border border-gray-200 rounded-lg hover:border-green-500 hover:bg-green-50 transition-colors group"
-            >
-              <div className="w-10 h-10 bg-green-100 group-hover:bg-green-200 rounded-lg flex items-center justify-center">
-                <HandRaisedIcon className="w-5 h-5 text-green-600" />
-              </div>
-              <div className="flex-1">
-                <h4 className="font-medium text-gray-900">Aktif Oylamalara Katıl</h4>
-                <p className="text-sm text-gray-600">Bekleyen oylamalarda oy kullan</p>
-                <div className="text-xs text-green-600 mt-1">+10 STAT kazanacaksın</div>
-              </div>
-              <div className="text-xs text-green-600">
-                Senin oy gücün: {statData?.balance || 0}x
-              </div>
-            </Link>
-
-            {(user.role === 'CORE_TEAM' || user.role === 'MEMBER') && (
-              <Link 
-                to="/applications" 
-                className="flex items-center space-x-4 p-4 border border-gray-200 rounded-lg hover:border-purple-500 hover:bg-purple-50 transition-colors group"
-              >
-                <div className="w-10 h-10 bg-purple-100 group-hover:bg-purple-200 rounded-lg flex items-center justify-center">
-                  <UserGroupIcon className="w-5 h-5 text-purple-600" />
+            {recentActivity.map((activity) => {
+              const Icon = getActivityIcon(activity.type)
+              const colorClass = getActivityColor(activity.type)
+              
+              return (
+                <div key={activity.id} className="flex items-start space-x-4 p-3 rounded-lg hover:bg-gray-50 transition-colors">
+                  <div className={`w-10 h-10 ${colorClass} rounded-lg flex items-center justify-center flex-shrink-0`}>
+                    <Icon className="w-5 h-5" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center justify-between">
+                      <p className="font-medium text-gray-900 truncate">{activity.title}</p>
+                      {activity.platform && getPlatformIcon(activity.platform)}
+                    </div>
+                    <p className="text-sm text-gray-600 mt-1">{activity.action}</p>
+                    <div className="flex items-center justify-between mt-2">
+                      <p className="text-xs text-gray-500">{activity.time}</p>
+                      {getStatusIcon(activity.status)}
+                    </div>
+                  </div>
                 </div>
-                <div>
-                  <h4 className="font-medium text-gray-900">Pozisyona Başvur</h4>
-                  <p className="text-sm text-gray-600">Core Team veya yönetim pozisyonlarına başvur</p>
-                </div>
-              </Link>
-            )}
+              )
+            })}
           </div>
         </div>
 
-        {/* Pending Items with STAT Requirements */}
-        <div className="card">
+        {/* Pending Items */}
+        <div className="bg-white rounded-xl shadow-lg p-6 border border-gray-200">
           <div className="flex items-center justify-between mb-6">
             <h3 className="text-xl font-semibold text-gray-900">Bekleyen İşlemler</h3>
-            <span className="bg-red-100 text-red-800 text-xs font-medium px-2 py-1 rounded-full">
-              {pendingItems.length} bekleyen
+            <span className="bg-red-100 text-red-800 text-xs px-2 py-1 rounded-full">
+              {pendingItems.length} Adet
             </span>
           </div>
 
           <div className="space-y-4">
             {pendingItems.map((item) => (
-              <div 
-                key={item.id} 
-                className={`p-4 border rounded-lg ${item.urgent ? 'border-red-200 bg-red-50' : 'border-gray-200'}`}
-              >
-                <div className="flex items-start justify-between mb-2">
+              <div key={item.id} className={`p-4 rounded-lg border-l-4 ${
+                item.urgent ? 'border-red-500 bg-red-50' : 'border-blue-500 bg-blue-50'
+              }`}>
+                <div className="flex items-center justify-between mb-2">
                   <h4 className="font-medium text-gray-900">{item.title}</h4>
-                  <div className="flex items-center space-x-2">
-                    {item.urgent && (
-                      <span className="bg-red-100 text-red-800 text-xs font-medium px-2 py-1 rounded-full">
-                        Acil
-                      </span>
-                    )}
-                    <span className="bg-blue-100 text-blue-800 text-xs font-medium px-2 py-1 rounded-full">
-                      {item.requiredStat} STAT min.
-                    </span>
-                  </div>
+                  {item.platform && getPlatformIcon(item.platform)}
                 </div>
                 <p className="text-sm text-gray-600 mb-3">{item.description}</p>
                 <div className="flex items-center justify-between">
-                  <div className="text-xs text-gray-500">
-                    <div>{item.deadline}</div>
-                    <div className="text-green-600 mt-1">
-                      Senin oy gücün: {item.yourVotingPower}x 
-                      {item.yourVotingPower >= item.requiredStat ? ' ✅' : ' ❌'}
-                    </div>
-                  </div>
-                  <Link 
-                    to={`/${item.type === 'vote' ? 'voting' : 'proposals'}`}
-                    className="text-dao-blue hover:text-blue-700 text-sm font-medium"
-                  >
-                    İşleme Git →
+                  <span className={`text-xs px-2 py-1 rounded-full ${
+                    item.urgent ? 'bg-red-100 text-red-800' : 'bg-blue-100 text-blue-800'
+                  }`}>
+                    {item.deadline}
+                  </span>
+                  <Link to="/voting" className="text-blue-600 hover:text-blue-800 text-sm font-medium">
+                    İncele →
                   </Link>
                 </div>
               </div>
             ))}
-
-            {pendingItems.length === 0 && (
-              <div className="text-center py-8 text-gray-500">
-                <CheckCircleIcon className="w-8 h-8 mx-auto mb-2" />
-                <p>Tüm işlemler tamamlandı! 🎉</p>
-              </div>
-            )}
           </div>
         </div>
       </div>
 
-      {/* Recent Activity with STAT Rewards */}
-      <div className="card">
-        <div className="flex items-center justify-between mb-6">
-          <h3 className="text-xl font-semibold text-gray-900">Son Aktivitelerim</h3>
-          <Link to="/proposals" className="text-dao-blue hover:text-blue-700 text-sm font-medium">
-            Tüm Geçmişi Gör →
+      {/* Quick Actions */}
+      <div className="bg-white rounded-xl shadow-lg p-6 border border-gray-200">
+        <h3 className="text-xl font-semibold text-gray-900 mb-6">Hızlı İşlemler</h3>
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+          <Link to="/proposals" className="flex flex-col items-center p-4 border border-gray-200 rounded-lg hover:shadow-lg transition-all duration-200 hover:scale-105">
+            <PlusIcon className="w-8 h-8 text-blue-600 mb-2" />
+            <span className="text-sm font-medium text-gray-900 text-center">Yeni Proposal</span>
+          </Link>
+          
+          <Link to="/voting" className="flex flex-col items-center p-4 border border-gray-200 rounded-lg hover:shadow-lg transition-all duration-200 hover:scale-105">
+            <HandRaisedIcon className="w-8 h-8 text-green-600 mb-2" />
+            <span className="text-sm font-medium text-gray-900 text-center">Oy Kullan</span>
+          </Link>
+          
+          <Link to="/kyc" className="flex flex-col items-center p-4 border border-gray-200 rounded-lg hover:shadow-lg transition-all duration-200 hover:scale-105">
+            <TrophyIcon className="w-8 h-8 text-purple-600 mb-2" />
+            <span className="text-sm font-medium text-gray-900 text-center">ETH Prague Test</span>
+          </Link>
+          
+          <Link to="/admin" className="flex flex-col items-center p-4 border border-gray-200 rounded-lg hover:shadow-lg transition-all duration-200 hover:scale-105">
+            <UserGroupIcon className="w-8 h-8 text-indigo-600 mb-2" />
+            <span className="text-sm font-medium text-gray-900 text-center">Admin Panel</span>
           </Link>
         </div>
-
-        <div className="space-y-4">
-          {recentActivity.map((activity) => {
-            const Icon = getActivityIcon(activity.type);
-            const colorClass = getActivityColor(activity.type);
-            
-            return (
-              <div key={activity.id} className="flex items-center space-x-4 p-4 bg-gray-50 rounded-lg">
-                <div className={`w-10 h-10 ${colorClass} rounded-lg flex items-center justify-center flex-shrink-0`}>
-                  <Icon className="w-5 h-5" />
-                </div>
-                <div className="flex-1 min-w-0">
-                  <p className="font-medium text-gray-900">{activity.title}</p>
-                  <p className="text-sm text-gray-600">{activity.action}</p>
-                  {activity.statReward && (
-                    <div className="text-xs text-yellow-600 mt-1 flex items-center space-x-1">
-                      <StarIcon className="w-3 h-3" />
-                      <span>+{activity.statReward} STAT kazandın</span>
-                    </div>
-                  )}
-                </div>
-                <div className="flex items-center space-x-2 text-sm text-gray-500">
-                  {getStatusIcon(activity.status)}
-                  <span>{activity.time}</span>
-                </div>
-              </div>
-            );
-          })}
-        </div>
       </div>
-
-      {/* STAT Leaderboard Preview */}
-      {leaderboard.length > 0 && (
-        <div className="card">
-          <div className="flex items-center justify-between mb-6">
-            <h3 className="text-xl font-semibold text-gray-900 flex items-center space-x-2">
-              <TrophyIcon className="w-6 h-6 text-yellow-500" />
-              <span>STAT Liderlik Tablosu</span>
-            </h3>
-            <Link to="/leaderboard" className="text-dao-blue hover:text-blue-700 text-sm font-medium">
-              Tümünü Gör →
-            </Link>
-          </div>
-
-          <div className="space-y-3">
-            {leaderboard.slice(0, 3).map((leader, index) => (
-              <div key={leader.address} className="flex items-center space-x-4 p-3 bg-gray-50 rounded-lg">
-                <div className={`w-8 h-8 rounded-full flex items-center justify-center font-bold text-sm
-                  ${index === 0 ? 'bg-yellow-100 text-yellow-600' : 
-                    index === 1 ? 'bg-gray-100 text-gray-600' : 
-                    'bg-amber-100 text-amber-600'}`}>
-                  {index + 1}
-                </div>
-                <div className="flex-1">
-                  <div className="font-medium text-gray-900">
-                    {leader.address === user.id ? 'Sen' : `Kullanıcı ${index + 1}`}
-                  </div>
-                  <div className="text-sm text-gray-600">{leader.role}</div>
-                </div>
-                <div className="text-right">
-                  <div className="font-bold text-dao-blue">{leader.balance} STAT</div>
-                  <div className="text-xs text-gray-500">{leader.contributions} katkı</div>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
     </div>
-  );
-};
+  )
+}
 
-export default Dashboard; 
+export default Dashboard 

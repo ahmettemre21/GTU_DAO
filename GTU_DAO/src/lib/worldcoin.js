@@ -1,5 +1,79 @@
-import { MiniKit } from '@worldcoin/minikit-js'
-import { VerificationLevel } from '@worldcoin/id'
+// Mock World App MiniKit Service for ETH Prague ($10k Prize Pool)
+// Real implementation would use @worldcoin/minikit-js when available
+
+console.log('Loading World App Mock Service for ETH Prague Demo');
+
+// Mock MiniKit class
+class MockMiniKit {
+  constructor(config) {
+    this.config = config;
+    console.log('Mock MiniKit initialized for ETH Prague demo:', config);
+  }
+
+  async install() {
+    // Simulate installation delay
+    await new Promise(resolve => setTimeout(resolve, 500));
+    console.log('Mock MiniKit installed');
+    return true;
+  }
+
+  async verifyAction(params) {
+    // Simulate verification delay
+    await new Promise(resolve => setTimeout(resolve, 2000));
+    
+    console.log('Mock World ID verification:', params);
+    
+    // Generate mock verification result
+    return {
+      success: true,
+      proof: `0x${Math.random().toString(16).substring(2)}${Math.random().toString(16).substring(2)}`,
+      merkle_root: `0x${Math.random().toString(16).substring(2)}${Math.random().toString(16).substring(2)}`,
+      nullifier_hash: `0x${Math.random().toString(16).substring(2)}${Math.random().toString(16).substring(2)}`,
+      verification_level: 'ORB'
+    };
+  }
+
+  async connectWallet() {
+    await new Promise(resolve => setTimeout(resolve, 1000));
+    return {
+      success: true,
+      address: '0x742d35Cc6634C0532925a3b8D34E1C7C796F5032',
+      chainId: 1
+    };
+  }
+
+  async sendTransaction(params) {
+    await new Promise(resolve => setTimeout(resolve, 1500));
+    return {
+      hash: `0x${Math.random().toString(16).substring(2)}${Math.random().toString(16).substring(2)}`
+    };
+  }
+
+  async signMessage(message) {
+    await new Promise(resolve => setTimeout(resolve, 1000));
+    return {
+      signature: `0x${Math.random().toString(16).substring(2)}${Math.random().toString(16).substring(2)}`
+    };
+  }
+
+  isWorldApp() {
+    return false; // Mock environment
+  }
+
+  getUserInfo() {
+    return {
+      isVerified: true,
+      verificationLevel: 'ORB',
+      nullifierHash: `0x${Math.random().toString(16).substring(2)}`
+    };
+  }
+}
+
+// Mock VerificationLevel enum
+export const VerificationLevel = {
+  Device: 'DEVICE',
+  Orb: 'ORB'
+};
 
 // World App MiniKit Configuration for ETH Prague ($10k Prize Pool)
 export class WorldcoinService {
@@ -12,14 +86,14 @@ export class WorldcoinService {
       action: 'gtu-dao-kyc-verification',
       signal: 'gtu-dao-member-verification',
       enableTelemetry: true,
-      walletConnectProjectId: process.env.VITE_WALLETCONNECT_PROJECT_ID
+      walletConnectProjectId: process.env.VITE_WALLETCONNECT_PROJECT_ID || 'demo_project'
     }
   }
 
   async initialize() {
     try {
       if (!this.isInitialized) {
-        this.minikit = new MiniKit({
+        this.minikit = new MockMiniKit({
           appId: this.config.appId,
           enableTelemetry: this.config.enableTelemetry
         })
@@ -27,7 +101,7 @@ export class WorldcoinService {
         await this.minikit.install()
         this.isInitialized = true
         
-        console.log('World App MiniKit initialized successfully')
+        console.log('World App MiniKit initialized successfully (ETH Prague Mock)')
         return true
       }
       return true
@@ -164,4 +238,7 @@ export const useWorldcoin = () => {
     getUserInfo: () => worldcoinService.getUserInfo(),
     initialize: () => worldcoinService.initialize()
   }
-} 
+}
+
+// Legacy function for backward compatibility
+export const verifyWithWorldID = () => worldcoinService.verifyWithWorldID() 

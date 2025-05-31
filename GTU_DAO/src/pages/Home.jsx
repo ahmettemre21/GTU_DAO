@@ -1,258 +1,313 @@
-import { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import React, { useState, useEffect } from 'react'
+import { Link } from 'react-router-dom'
+import { toast } from 'react-hot-toast'
 import { 
-  UserGroupIcon, 
-  DocumentTextIcon, 
-  HandRaisedIcon,
-  ShieldCheckIcon,
   ChartBarIcon,
-  SparklesIcon,
+  UserGroupIcon,
+  DocumentTextIcon,
+  ShieldCheckIcon,
+  CurrencyDollarIcon,
   GlobeAltIcon,
-  AcademicCapIcon
-} from '@heroicons/react/24/outline';
+  LockClosedIcon,
+  EyeIcon,
+  SparklesIcon,
+  TrophyIcon
+} from '@heroicons/react/24/outline'
+import { EthPragueService } from '../services/ethPragueIntegrations'
 
-const Home = ({ user }) => {
-  const [stats, setStats] = useState({
-    totalMembers: 0,
-    activeProposals: 0,
-    completedVotes: 0,
-    kycVerified: 0,
-  });
+const Home = () => {
+  const [ethPragueData, setEthPragueData] = useState(null)
+  const [isLoading, setIsLoading] = useState(true)
 
   useEffect(() => {
-    // Demo istatistikleri yükle
-    setTimeout(() => {
-      setStats({
-        totalMembers: 142,
-        activeProposals: 5,
-        completedVotes: 23,
-        kycVerified: 98,
-      });
-    }, 1000);
-  }, []);
+    const initializeEthPrague = async () => {
+      try {
+        const result = await EthPragueService.initializeAll()
+        setEthPragueData(result)
+        
+        if (result.success) {
+          toast.success('🏆 ETH Prague 2025 entegrasyonları başlatıldı!')
+        }
+      } catch (error) {
+        console.error('ETH Prague initialization error:', error)
+        toast.error('ETH Prague entegrasyonları başlatılamadı')
+      } finally {
+        setIsLoading(false)
+      }
+    }
 
-  const features = [
+    initializeEthPrague()
+  }, [])
+
+  const prizePoolInfo = EthPragueService.getPrizePoolInfo()
+
+  const stats = [
+    { name: 'Toplam Üye', value: '1,247', icon: UserGroupIcon, change: '+12%' },
+    { name: 'Aktif Proposaller', value: '23', icon: DocumentTextIcon, change: '+5%' },
+    { name: 'Toplam Oy', value: '8,492', icon: ChartBarIcon, change: '+18%' },
+    { name: 'ETH Prague Ödül', value: '$40K', icon: TrophyIcon, change: 'NEW!' }
+  ]
+
+  const ethPragueIntegrations = [
     {
-      icon: ShieldCheckIcon,
-      title: 'KYC Doğrulama',
-      description: 'World ID ile güvenli kimlik doğrulama sistemi',
-      color: 'text-green-600 bg-green-100',
-    },
-    {
-      icon: HandRaisedIcon,
-      title: 'Şeffaf Oylama',
-      description: 'Blockchain tabanlı adil ve şeffaf oylama sistemi',
+      title: 'Blockscout Integration',
+      description: 'Advanced blockchain explorer with Merits system',
+      prize: '$20,000',
+      icon: EyeIcon,
       color: 'text-blue-600 bg-blue-100',
+      features: ['Transaction Tracking', 'Smart Contract Verification', 'Merits & Badges', 'Analytics API'],
+      status: ethPragueData?.integrations?.blockscout?.success ? 'active' : 'loading'
     },
     {
-      icon: UserGroupIcon,
-      title: 'Role Dayalı Yetkilendirme',
-      description: 'Üye, Core Team ve Yönetim seviyelerinde yetki dağılımı',
-      color: 'text-purple-600 bg-purple-100',
-    },
-    {
+      title: 'World App MiniKit',
+      description: 'World ID verification & payment integration',
+      prize: '$10,000', 
       icon: GlobeAltIcon,
-      title: 'World App Entegrasyonu',
-      description: 'MiniKit ile 23M+ kullanıcıya anında erişim',
-      color: 'text-indigo-600 bg-indigo-100',
+      color: 'text-green-600 bg-green-100',
+      features: ['World ID Verification', 'WLD/USDC Payments', 'MiniApp Ecosystem', 'Haptic Feedback'],
+      status: ethPragueData?.integrations?.worldApp?.success ? 'active' : 'loading'
     },
-  ];
-
-  const recentActivity = [
-    { type: 'proposal', title: 'Blockchain Workshop Organizasyonu', user: 'Mehmet K.', time: '2 saat önce' },
-    { type: 'vote', title: 'Kulüp Logo Tasarımı Oylaması', user: 'Ayşe D.', time: '5 saat önce' },
-    { type: 'application', title: 'Core Team Başvurusu', user: 'Can Y.', time: '1 gün önce' },
-    { type: 'proposal', title: 'ETH Prague Katılım Talebi', user: 'Zeynep A.', time: '2 gün önce' },
-  ];
-
-  const getActivityIcon = (type) => {
-    switch (type) {
-      case 'proposal': return DocumentTextIcon;
-      case 'vote': return HandRaisedIcon;
-      case 'application': return UserGroupIcon;
-      default: return ChartBarIcon;
+    {
+      title: 'vlayer ZK Proofs',
+      description: 'Zero-knowledge proof verification system',
+      prize: '$10,000',
+      icon: LockClosedIcon,
+      color: 'text-purple-600 bg-purple-100',
+      features: ['Web Proofs', 'Email Proofs', 'Time Travel', 'Teleport'],
+      status: ethPragueData?.integrations?.vlayer?.success ? 'active' : 'loading'
     }
-  };
+  ]
 
-  const getActivityColor = (type) => {
-    switch (type) {
-      case 'proposal': return 'text-blue-600 bg-blue-100';
-      case 'vote': return 'text-green-600 bg-green-100';
-      case 'application': return 'text-purple-600 bg-purple-100';
-      default: return 'text-gray-600 bg-gray-100';
-    }
-  };
+  const quickActions = [
+    { name: 'Proposal Oluştur', href: '/proposals', icon: DocumentTextIcon, color: 'bg-blue-600' },
+    { name: 'Oy Kullan', href: '/voting', icon: ChartBarIcon, color: 'bg-green-600' },
+    { name: 'KYC Doğrulama', href: '/kyc', icon: ShieldCheckIcon, color: 'bg-purple-600' },
+    { name: 'Dashboard', href: '/dashboard', icon: UserGroupIcon, color: 'bg-indigo-600' }
+  ]
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+          <p className="text-gray-600">ETH Prague 2025 entegrasyonları yükleniyor...</p>
+        </div>
+      </div>
+    )
+  }
 
   return (
     <div className="space-y-8">
       {/* Hero Section */}
-      <section className="text-center py-16">
-        <div className="max-w-4xl mx-auto">
-          <div className="flex justify-center mb-6">
-            <div className="w-20 h-20 bg-gradient-to-r from-dao-blue to-dao-purple rounded-2xl flex items-center justify-center">
-              <AcademicCapIcon className="w-10 h-10 text-white" />
+      <div className="bg-gradient-to-r from-blue-600 via-purple-600 to-indigo-600 rounded-2xl p-8 text-white">
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-4xl font-bold mb-4">
+              GTÜ Blockchain Club DAO
+            </h1>
+            <p className="text-xl text-blue-100 mb-6">
+              Decentralized Autonomous Organization
+            </p>
+            <div className="flex items-center space-x-4">
+              <span className="bg-white/20 px-4 py-2 rounded-lg text-sm font-medium">
+                📚 Gebze Teknik Üniversitesi
+              </span>
+              <span className="bg-white/20 px-4 py-2 rounded-lg text-sm font-medium">
+                🏆 ETH Prague 2025
+              </span>
             </div>
           </div>
-          
-          <h1 className="text-5xl font-bold text-gray-900 mb-6">
-            GTÜ Blockchain Kulübü
-            <span className="bg-gradient-to-r from-dao-blue to-dao-purple bg-clip-text text-transparent block">
-              DAO Yönetişim Sistemi
-            </span>
-          </h1>
-          
-          <p className="text-xl text-gray-600 mb-8 max-w-3xl mx-auto">
-            Merkeziyetsiz, şeffaf ve KYC onaylı yönetişim sistemi ile kulüp kararlarında 
-            demokratik katılımı sağlayan Web3 tabanlı platform
-          </p>
-
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            {user ? (
-              <Link to="/dashboard" className="btn-primary inline-flex items-center space-x-2 px-8 py-3">
-                <ChartBarIcon className="w-5 h-5" />
-                <span>Dashboard'a Git</span>
-              </Link>
-            ) : (
-              <button className="btn-primary inline-flex items-center space-x-2 px-8 py-3">
-                <ShieldCheckIcon className="w-5 h-5" />
-                <span>World ID ile Katıl</span>
-              </button>
-            )}
-            
-            <Link to="/proposals" className="btn-secondary inline-flex items-center space-x-2 px-8 py-3">
-              <DocumentTextIcon className="w-5 h-5" />
-              <span>Önerileri İncele</span>
-            </Link>
+          <div className="hidden md:block">
+            <div className="bg-white/10 backdrop-blur-sm rounded-xl p-6 text-center">
+              <TrophyIcon className="w-16 h-16 mx-auto mb-2 text-yellow-300" />
+              <div className="text-2xl font-bold">{prizePoolInfo.total}</div>
+              <div className="text-sm text-blue-100">Prize Pool</div>
+            </div>
           </div>
         </div>
-      </section>
+      </div>
 
-      {/* Stats Section */}
-      <section className="grid grid-cols-2 lg:grid-cols-4 gap-6">
-        <div className="card text-center">
-          <div className="w-12 h-12 bg-dao-blue bg-opacity-10 rounded-lg flex items-center justify-center mx-auto mb-4">
-            <UserGroupIcon className="w-6 h-6 text-dao-blue" />
+      {/* ETH Prague 2025 Banner */}
+      <div className="bg-gradient-to-r from-yellow-400 via-orange-500 to-red-500 rounded-xl p-6 text-white">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center space-x-4">
+            <SparklesIcon className="w-8 h-8" />
+            <div>
+              <h3 className="text-xl font-bold">ETH Prague 2025 Hackathon</h3>
+              <p className="text-yellow-100">3 Platform Entegrasyonu - $40,000 Toplam Ödül Havuzu</p>
+            </div>
           </div>
-          <h3 className="text-2xl font-bold text-gray-900 mb-1">{stats.totalMembers}</h3>
-          <p className="text-gray-600">Toplam Üye</p>
-        </div>
-
-        <div className="card text-center">
-          <div className="w-12 h-12 bg-dao-green bg-opacity-10 rounded-lg flex items-center justify-center mx-auto mb-4">
-            <DocumentTextIcon className="w-6 h-6 text-dao-green" />
+          <div className="text-right">
+            <div className="text-sm text-yellow-100">Statü</div>
+            <div className="font-semibold">
+              {ethPragueData?.success ? '✅ Aktif' : '🔄 Yükleniyor'}
+            </div>
           </div>
-          <h3 className="text-2xl font-bold text-gray-900 mb-1">{stats.activeProposals}</h3>
-          <p className="text-gray-600">Aktif Öneri</p>
         </div>
+      </div>
 
-        <div className="card text-center">
-          <div className="w-12 h-12 bg-dao-purple bg-opacity-10 rounded-lg flex items-center justify-center mx-auto mb-4">
-            <HandRaisedIcon className="w-6 h-6 text-dao-purple" />
-          </div>
-          <h3 className="text-2xl font-bold text-gray-900 mb-1">{stats.completedVotes}</h3>
-          <p className="text-gray-600">Tamamlanan Oylama</p>
-        </div>
-
-        <div className="card text-center">
-          <div className="w-12 h-12 bg-dao-orange bg-opacity-10 rounded-lg flex items-center justify-center mx-auto mb-4">
-            <ShieldCheckIcon className="w-6 h-6 text-dao-orange" />
-          </div>
-          <h3 className="text-2xl font-bold text-gray-900 mb-1">{stats.kycVerified}%</h3>
-          <p className="text-gray-600">KYC Onaylı</p>
-        </div>
-      </section>
-
-      {/* Features Section */}
-      <section>
-        <div className="text-center mb-12">
-          <h2 className="text-3xl font-bold text-gray-900 mb-4">Platform Özellikleri</h2>
-          <p className="text-gray-600 max-w-2xl mx-auto">
-            Modern blockchain teknolojileri ile güçlendirilmiş DAO yönetişim sistemi
-          </p>
-        </div>
-
-        <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
-          {features.map((feature, index) => {
-            const Icon = feature.icon;
-            return (
-              <div key={index} className="card text-center group hover:shadow-xl transition-shadow duration-300">
-                <div className={`w-12 h-12 ${feature.color} rounded-lg flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform duration-300`}>
-                  <Icon className="w-6 h-6" />
+      {/* Stats Grid */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        {stats.map((stat) => {
+          const Icon = stat.icon
+          return (
+            <div key={stat.name} className="bg-white rounded-xl shadow-lg p-6 border border-gray-200">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-medium text-gray-600">{stat.name}</p>
+                  <p className="text-2xl font-bold text-gray-900">{stat.value}</p>
                 </div>
-                <h3 className="text-lg font-semibold text-gray-900 mb-2">{feature.title}</h3>
-                <p className="text-gray-600 text-sm">{feature.description}</p>
+                <div className="bg-blue-50 rounded-lg p-3">
+                  <Icon className="w-6 h-6 text-blue-600" />
+                </div>
               </div>
-            );
+              <div className="mt-4">
+                <span className={`text-sm font-medium ${
+                  stat.change.includes('+') ? 'text-green-600' : 
+                  stat.change === 'NEW!' ? 'text-orange-600' : 'text-red-600'
+                }`}>
+                  {stat.change}
+                </span>
+              </div>
+            </div>
+          )
+        })}
+      </div>
+
+      {/* ETH Prague Integrations */}
+      <div className="bg-white rounded-xl shadow-lg p-6 border border-gray-200">
+        <h2 className="text-2xl font-bold text-gray-900 mb-6">
+          🏆 ETH Prague 2025 Entegrasyonları
+        </h2>
+        
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          {ethPragueIntegrations.map((integration) => {
+            const Icon = integration.icon
+            return (
+              <div key={integration.title} className="border border-gray-200 rounded-lg p-6 hover:shadow-lg transition-shadow">
+                <div className="flex items-center justify-between mb-4">
+                  <div className={`w-12 h-12 rounded-lg flex items-center justify-center ${integration.color}`}>
+                    <Icon className="w-6 h-6" />
+                  </div>
+                  <div className="text-right">
+                    <div className="text-sm text-gray-500">Ödül Havuzu</div>
+                    <div className="font-bold text-green-600">{integration.prize}</div>
+                  </div>
+                </div>
+                
+                <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                  {integration.title}
+                </h3>
+                <p className="text-gray-600 text-sm mb-4">
+                  {integration.description}
+                </p>
+                
+                <div className="space-y-2 mb-4">
+                  {integration.features.map((feature, index) => (
+                    <div key={index} className="flex items-center text-sm text-gray-600">
+                      <span className="w-1.5 h-1.5 bg-blue-400 rounded-full mr-2"></span>
+                      {feature}
+                    </div>
+                  ))}
+                </div>
+                
+                <div className="flex items-center justify-between">
+                  <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                    integration.status === 'active' 
+                      ? 'bg-green-100 text-green-800' 
+                      : 'bg-yellow-100 text-yellow-800'
+                  }`}>
+                    {integration.status === 'active' ? '✅ Aktif' : '🔄 Yükleniyor'}
+                  </span>
+                  <Link 
+                    to="/kyc" 
+                    className="text-blue-600 hover:text-blue-800 text-sm font-medium"
+                  >
+                    Test Et →
+                  </Link>
+                </div>
+              </div>
+            )
           })}
         </div>
-      </section>
+      </div>
+
+      {/* Quick Actions */}
+      <div className="bg-white rounded-xl shadow-lg p-6 border border-gray-200">
+        <h2 className="text-2xl font-bold text-gray-900 mb-6">Hızlı İşlemler</h2>
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+          {quickActions.map((action) => {
+            const Icon = action.icon
+            return (
+              <Link
+                key={action.name}
+                to={action.href}
+                className="flex flex-col items-center p-6 border border-gray-200 rounded-lg hover:shadow-lg transition-all duration-200 hover:scale-105"
+              >
+                <div className={`w-12 h-12 rounded-lg flex items-center justify-center ${action.color} mb-3`}>
+                  <Icon className="w-6 h-6 text-white" />
+                </div>
+                <span className="text-sm font-medium text-gray-900 text-center">
+                  {action.name}
+                </span>
+              </Link>
+            )
+          })}
+        </div>
+      </div>
 
       {/* Recent Activity */}
-      <section className="grid lg:grid-cols-2 gap-8">
-        <div className="card">
-          <div className="flex items-center justify-between mb-6">
-            <h3 className="text-xl font-semibold text-gray-900">Son Aktiviteler</h3>
-            <Link to="/dashboard" className="text-dao-blue hover:text-blue-700 text-sm font-medium">
-              Tümünü Gör →
-            </Link>
-          </div>
-
-          <div className="space-y-4">
-            {recentActivity.map((activity, index) => {
-              const Icon = getActivityIcon(activity.type);
-              const colorClass = getActivityColor(activity.type);
-              
-              return (
-                <div key={index} className="flex items-center space-x-4 p-3 rounded-lg hover:bg-gray-50 transition-colors">
-                  <div className={`w-10 h-10 ${colorClass} rounded-lg flex items-center justify-center flex-shrink-0`}>
-                    <Icon className="w-5 h-5" />
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="font-medium text-gray-900 truncate">{activity.title}</p>
-                    <p className="text-sm text-gray-500">{activity.user} • {activity.time}</p>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
+      <div className="bg-white rounded-xl shadow-lg p-6 border border-gray-200">
+        <h2 className="text-2xl font-bold text-gray-900 mb-6">Son Aktiviteler</h2>
+        <div className="space-y-4">
+          {[
+            { action: 'ETH Prague entegrasyonları aktifleştirildi', time: '2 dakika önce', type: 'success' },
+            { action: 'Yeni proposal: "Token Economics Update"', time: '1 saat önce', type: 'info' },
+            { action: 'Blockscout verification tamamlandı', time: '3 saat önce', type: 'success' },
+            { action: 'World ID doğrulaması başarılı', time: '5 saat önce', type: 'success' },
+            { action: 'vlayer ZK proof oluşturuldu', time: '1 gün önce', type: 'info' }
+          ].map((activity, index) => (
+            <div key={index} className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+              <div className="flex items-center space-x-3">
+                <div className={`w-2 h-2 rounded-full ${
+                  activity.type === 'success' ? 'bg-green-500' : 'bg-blue-500'
+                }`}></div>
+                <span className="text-sm text-gray-900">{activity.action}</span>
+              </div>
+              <span className="text-xs text-gray-500">{activity.time}</span>
+            </div>
+          ))}
         </div>
+      </div>
 
-        {/* ETH Prague Info */}
-        <div className="card bg-gradient-to-br from-dao-blue to-dao-purple text-white">
-          <div className="flex items-center space-x-3 mb-4">
-            <SparklesIcon className="w-8 h-8" />
-            <h3 className="text-xl font-semibold">ETH Prague 2025</h3>
-          </div>
-          
-          <p className="mb-6 opacity-90">
-            Bu proje ETH Prague hackathon'unda geliştirilmiş olup, World App, vlayer ve Blockscout 
-            sponsor ödüllerine aday gösterilmiştir.
-          </p>
-
-          <div className="space-y-3">
-            <div className="flex items-center space-x-2 text-sm opacity-90">
-              <span className="w-2 h-2 bg-white rounded-full"></span>
-              <span>World App MiniKit entegrasyonu</span>
-            </div>
-            <div className="flex items-center space-x-2 text-sm opacity-90">
-              <span className="w-2 h-2 bg-white rounded-full"></span>
-              <span>vlayer Web/Email Proofs</span>
-            </div>
-            <div className="flex items-center space-x-2 text-sm opacity-90">
-              <span className="w-2 h-2 bg-white rounded-full"></span>
-              <span>Blockscout API entegrasyonu</span>
-            </div>
-          </div>
-
-          <div className="mt-6 pt-6 border-t border-white border-opacity-20">
-            <p className="text-sm opacity-90">
-              Açık kaynak kodlu ve tüm üniversite kulüpleri için örnek alınabilir
+      {/* ETH Prague Info Card */}
+      <div className="bg-gradient-to-r from-purple-100 to-blue-100 rounded-xl p-6 border border-purple-200">
+        <div className="flex items-center space-x-4">
+          <TrophyIcon className="w-12 h-12 text-purple-600" />
+          <div>
+            <h3 className="text-xl font-bold text-gray-900">ETH Prague 2025 Hackathon</h3>
+            <p className="text-gray-600 mb-4">
+              GTU DAO, 3 farklı platformla entegrasyon yaparak toplam $40,000 ödül havuzunu hedefliyor
             </p>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
+              <div className="bg-white/50 rounded-lg p-3">
+                <div className="font-semibold text-blue-600">Blockscout ($20k)</div>
+                <div className="text-gray-600">Explorer & Analytics</div>
+              </div>
+              <div className="bg-white/50 rounded-lg p-3">
+                <div className="font-semibold text-green-600">World App ($10k)</div>
+                <div className="text-gray-600">MiniKit & World ID</div>
+              </div>
+              <div className="bg-white/50 rounded-lg p-3">
+                <div className="font-semibold text-purple-600">vlayer ($10k)</div>
+                <div className="text-gray-600">ZK Proofs & Privacy</div>
+              </div>
+            </div>
           </div>
         </div>
-      </section>
+      </div>
     </div>
-  );
-};
+  )
+}
 
-export default Home; 
+export default Home 
