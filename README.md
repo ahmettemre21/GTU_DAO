@@ -1,42 +1,64 @@
-# GTU DAO - Blockchain Kulübü Yönetişim Sistemi
+# 🎓 GTU DAO - Gebze Teknik Üniversitesi Merkezi Olmayan Öğrenci Organizasyonu
 
-![GTU DAO](https://img.shields.io/badge/GTU-DAO-blue) ![ETH Prague 2025](https://img.shields.io/badge/ETH_Prague-2025-purple) ![World App](https://img.shields.io/badge/World-App-green)
+![ETH Prague 2025](https://img.shields.io/badge/ETH%20Prague%202025-Hackathon%20Project-blue)
+![Prize Pool](https://img.shields.io/badge/Prize%20Pool-$40,000-green)
+![World ID](https://img.shields.io/badge/World%20ID-$10k-orange)
+![Blockscout](https://img.shields.io/badge/Blockscout-$20k-purple)
+![vlayer](https://img.shields.io/badge/vlayer-$10k-red)
 
-GTÜ Blockchain Kulübü için merkeziyetsiz, şeffaf, KYC onaylı ve role dayalı yönetişim sistemi. Bu proje **ETH Prague 2025** hackathonunda geliştirilmiş olup, üniversite kulüpleri için örnek alınabilecek açık kaynaklı bir DAO altyapısı sunmaktadır.
+GTU DAO, Gebze Teknik Üniversitesi öğrencileri için tasarlanmış modern bir merkezi olmayan otonom organizasyon (DAO) platformudur. ETH Prague 2025 hackathonunda World ID, Blockscout ve vlayer entegrasyonları ile geliştirilmiştir.
 
-## 🎯 Proje Amacı
+## 🚀 Özellikler
 
-GTU DAO, üniversite kulüplerinin demokratik ve şeffaf yönetimi için blockchain tabanlı bir çözüm sunar:
+### 🎯 Temel Fonksiyonlar
+- **World ID Entegrasyonu**: Güvenilir KYC ve doğrulama sistemi
+- **Ağırlıklı Oylama**: Öğrenci durumu ve aktiflik bazlı oy gücü
+- **Proposal Sistemi**: Demokratik karar alma mekanizması
+- **Kulüp Yönetimi**: Öğrenci kulüpleri için başvuru ve yönetim
+- **Admin Paneli**: Yönetici araçları ve kontroller
 
-- **Merkeziyetsiz Yönetişim**: Kulüp kararları DAO mekanizmaları ile alınır
-- **KYC Doğrulama**: World ID ile tek kişi tek oy garantisi
-- **Role Dayalı Yetkilendirme**: Üye, Core Team ve Yönetim seviyeleri
-- **Şeffaf Oylama**: Tüm kararlar blockchain üzerinde kayıtlı
+### 💻 Teknik Özellikler
+- Next.js 14 ile modern frontend
+- TypeScript tam destek
+- TailwindCSS ve Shadcn/UI bileşenleri
+- RainbowKit wallet entegrasyonu
+- Hardhat smart contract geliştirme
+- Sepolia ve Rootstock ağ desteği
 
-## 🏗️ Teknolojiler
+## 📁 Proje Yapısı
 
-### Frontend
-- **React 18** + **Vite** - Modern web uygulaması
-- **Tailwind CSS** - Responsive UI tasarımı
-- **React Router** - Sayfa yönlendirme
-- **Prisma ORM** - Type-safe veritabanı yönetimi
+```
+GTU_DAO/
+├── packages/
+│   ├── nextjs/              # Frontend uygulaması
+│   │   ├── src/
+│   │   │   ├── pages/       # Next.js sayfaları
+│   │   │   ├── components/  # React bileşenleri
+│   │   │   │   ├── ui/      # Shadcn/UI bileşenleri
+│   │   │   │   └── layout/  # Layout bileşenleri
+│   │   │   ├── hooks/       # Custom React hooks
+│   │   │   ├── services/    # API servisleri
+│   │   │   └── styles/      # CSS ve Tailwind konfigürasyonu
+│   │   └── public/          # Statik dosyalar
+│   └── hardhat/             # Smart contract geliştirme
+│       ├── contracts/       # Solidity kontratları
+│       ├── scripts/         # Deployment scriptleri
+│       └── test/           # Test dosyaları
+├── package.json             # Workspace konfigürasyonu
+└── README.md               # Bu dosya
+```
 
-### Blockchain & Web3
-- **World MiniKit** - World App entegrasyonu
-- **World ID** - KYC doğrulama sistemi
-- **Ethers.js** - Blockchain etkileşimi
+## 🛠️ Kurulum ve Çalıştırma
 
-### ETH Prague Sponsor Entegrasyonları
-- 🌍 **World App**: MiniKit SDK ile 23M+ kullanıcıya erişim
-- 🔗 **vlayer**: Web/Email proofs ile KYC doğrulama
-- 📊 **Blockscout**: Merits API ile kullanıcı ödüllendirme
+### Gereksinimler
+- Node.js 18+ 
+- npm veya yarn
+- Git
 
-## 🚀 Kurulum ve Çalıştırma
-
-### 1. Depoyu Klonlayın
+### 1. Projeyi Klonlayın
 ```bash
 git clone https://github.com/your-username/GTU_DAO.git
-cd GTU_DAO/ahmet
+cd GTU_DAO
 ```
 
 ### 2. Bağımlılıkları Yükleyin
@@ -44,99 +66,129 @@ cd GTU_DAO/ahmet
 npm install
 ```
 
-### 3. Veritabanını Hazırlayın
-```bash
-npx prisma generate
-npx prisma db push
-```
-
-### 4. Geliştirme Sunucusunu Başlatın
+### 3. Development Sunucusunu Başlatın
 ```bash
 npm run dev
 ```
 
-Uygulama `http://localhost:5173` adresinde çalışacaktır.
+Uygulama [http://localhost:3000](http://localhost:3000) adresinde çalışacaktır.
 
-## 📱 Özellikler
+## 📊 Sayfalar ve Özellikler
 
-### Tamamlanan Özellikler ✅
-- **Role Tabanlı Yetkilendirme**: Üye, Core Team, Yönetim Kurulu, Başkan
-- **Öneri Sistemi**: Yeni öneriler oluşturma ve filtreleme
-- **Oylama Mekanizması**: Demokratik karar alma süreci
-- **KYC Entegrasyonu**: World ID mock implementasyonu
-- **Dashboard**: Kullanıcı istatistikleri ve hızlı erişim
-- **Admin Panel**: Yönetim araçları
-- **Modern UI/UX**: Responsive ve erişilebilir tasarım
+### 🏠 Ana Sayfa (`/`)
+- Proje tanıtımı ve genel bilgiler
+- ETH Prague 2025 detayları
+- Quick start rehberi
 
-### Planlanan Özellikler 🚧
-- **Gerçek World MiniKit Entegrasyonu**
-- **vlayer Web/Email Proofs**
-- **Blockscout API Entegrasyonu**
-- **Smart Contract Deployment**
-- **Token Sistemi**
+### 📈 Dashboard (`/dashboard`)
+- Kişisel istatistikler
+- Aktiflik geçmişi
+- Hızlı aksiyonlar
 
-## 🗄️ Veritabanı Yapısı
+### 📋 Teklifler (`/proposals`)
+- Aktif tekliflere göz atma
+- Yeni teklif oluşturma
+- Oylama sistemi
 
-Sistem 7 ana tablodan oluşmaktadır:
-- **Users**: Kullanıcı profilleri ve roller
-- **AdminCouncil**: Yönetim kurulu üyeleri
-- **Proposals**: Kulüp önerileri
-- **Votes**: Oylama kayıtları
-- **Applications**: Pozisyon başvuruları
-- **KYCVerifications**: Kimlik doğrulama
-- **ActivityLogs**: Sistem aktiviteleri
+### 🗳️ Oylama (`/voting`)
+- Detaylı oylama arayüzü
+- Oy geçmişi
+- Sonuç analizi
 
-## 🎖️ ETH Prague 2025 Ödül Hedefleri
+### 📝 Başvurular (`/applications`)
+- Kulüp pozisyonlarına başvuru
+- Başvuru durumu takibi
 
-### World App ($10,000)
-- ✅ **MiniKit Mock Integration**: Development ready
-- 🚧 **Production Deployment**: Ready for implementation
-- ✅ **User Experience**: Optimized for mobile
+### 🔐 KYC Doğrulama (`/kyc`)
+- World ID entegrasyonu
+- Güvenli kimlik doğrulama
 
-### vlayer ($10,000)
-- ✅ **KYC Architecture**: Ready for web proofs
-- 🚧 **Email Verification**: Integration planned
+### ⚙️ Admin Panel (`/admin`)
+- Sistem yönetimi
+- Kullanıcı yönetimi
+- İstatistikler
 
-### Blockscout ($20,000)
-- ✅ **Merit System Design**: Point-based rewards
-- 🚧 **API Integration**: User activity tracking
+## 🔗 Smart Contract Adresleri
 
-## 📁 Proje Yapısı
+### Sepolia Testnet
+- **StatToken**: `0x...` (Yakında)
+- **VotingWithWeight**: `0x...` (Yakında)
+- **GTUDAOGovernance**: `0x...` (Yakında)
 
+## 🏆 ETH Prague 2025 Entegrasyonları
+
+### World ID ($10,000 Ödül Havuzu)
+- KYC sistemi için World ID kullanımı
+- Sybil saldırılarına karşı koruma
+- Gerçek öğrenci doğrulaması
+
+### Blockscout ($20,000 Ödül Havuzu)
+- Transaction explorer entegrasyonu
+- Block explorer analytics
+- Smart contract verification
+
+### vlayer ($10,000 Ödül Havuzu)
+- Layer 2 optimizasyonları
+- Gas optimizasyonu
+- Scaling çözümleri
+
+## 🧪 Test Etme
+
+```bash
+# Frontend testleri
+npm run test --workspace=packages/nextjs
+
+# Smart contract testleri
+npm run hardhat:test
 ```
-GTU_DAO/
-├── ahmet/                 # Ana React uygulaması
-│   ├── src/
-│   │   ├── components/    # UI bileşenleri
-│   │   ├── pages/         # Sayfa bileşenleri
-│   │   ├── lib/          # Yardımcı kütüphaneler
-│   │   └── ...
-│   ├── prisma/           # Veritabanı şeması
-│   ├── public/           # Statik dosyalar
-│   └── ...
-└── README.md             # Bu dosya
+
+## 🚀 Deployment
+
+```bash
+# Frontend build
+npm run build
+
+# Smart contract deployment
+npm run hardhat:deploy
 ```
 
-## 🤝 Katkıda Bulunma
+## 📚 Teknoloji Stack'i
 
-Bu proje açık kaynaklıdır ve topluluk katkılarına açıktır. Katkıda bulunmak için:
+### Frontend
+- **Next.js 14**: React framework
+- **TypeScript**: Type safety
+- **TailwindCSS**: Styling
+- **Shadcn/UI**: UI bileşenleri
+- **RainbowKit**: Wallet connection
+- **Wagmi**: Ethereum integration
 
-1. Fork yapın
-2. Feature branch oluşturun
-3. Değişikliklerinizi commit edin
-4. Pull Request açın
+### Blockchain
+- **Hardhat**: Development environment
+- **Solidity**: Smart contracts
+- **Sepolia**: Test network
+- **Rootstock**: Mainnet alternative
 
-## 📄 Lisans
-
-MIT License - Detaylar için `LICENSE` dosyasına bakın.
+### Integrations
+- **World ID**: Identity verification
+- **Blockscout**: Block explorer
+- **vlayer**: Layer 2 solutions
 
 ## 👥 Takım
 
-- **Ahmet Emre Yavuz** - Proje Geliştirici
-- **GTÜ Blockchain Kulübü** - Test ve Feedback
+- **Frontend Developer**: Modern React/Next.js geliştirme
+- **Smart Contract Developer**: Solidity ve DeFi protokolleri
+- **UI/UX Designer**: Kullanıcı deneyimi tasarımı
+
+## 📞 İletişim
+
+- **Website**: [gtu-dao.com](https://gtu-dao.com)
+- **Twitter**: [@GTU_DAO](https://twitter.com/GTU_DAO)
+- **Telegram**: [GTU DAO Community](https://t.me/gtu_dao)
+
+## 📄 Lisans
+
+Bu proje MIT lisansı altında lisanslanmıştır. Detaylar için `LICENSE` dosyasına bakınız.
 
 ---
 
-**GTU DAO** - Üniversite kulüplerinin geleceği için blockchain çözümü 🚀
-
-*ETH Prague 2025 ile gurururla sunulmuştur* 🇨🇿 
+**ETH Prague 2025** 🏆 | **$40,000 Prize Pool** 💰 | **Made with ❤️ in Istanbul** 

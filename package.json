@@ -1,0 +1,20 @@
+{
+  "name": "gtu-dao",
+  "version": "0.0.0",
+  "private": true,
+  "workspaces": [
+    "packages/*"
+  ],
+  "scripts": {
+    "dev": "npm run dev --workspace=packages/nextjs",
+    "build": "npm run build --workspace=packages/nextjs",
+    "start": "npm run start --workspace=packages/nextjs",
+    "lint": "npm run lint --workspace=packages/nextjs",
+    "hardhat:compile": "npm run compile --workspace=packages/hardhat",
+    "hardhat:deploy": "npm run deploy --workspace=packages/hardhat",
+    "hardhat:test": "npm run test --workspace=packages/hardhat"
+  },
+  "devDependencies": {
+    "typescript": "^5.0.0"
+  }
+} 
