@@ -27,10 +27,40 @@
       "static/chunks/main.js",
       "static/chunks/pages/_error.js"
     ],
+    "/admin": [
+      "static/chunks/webpack.js",
+      "static/chunks/main.js",
+      "static/chunks/pages/admin.js"
+    ],
+    "/applications": [
+      "static/chunks/webpack.js",
+      "static/chunks/main.js",
+      "static/chunks/pages/applications.js"
+    ],
+    "/dashboard": [
+      "static/chunks/webpack.js",
+      "static/chunks/main.js",
+      "static/chunks/pages/dashboard.js"
+    ],
+    "/kyc": [
+      "static/chunks/webpack.js",
+      "static/chunks/main.js",
+      "static/chunks/pages/kyc.js"
+    ],
     "/proposals": [
       "static/chunks/webpack.js",
       "static/chunks/main.js",
       "static/chunks/pages/proposals.js"
+    ],
+    "/proposals/create": [
+      "static/chunks/webpack.js",
+      "static/chunks/main.js",
+      "static/chunks/pages/proposals/create.js"
+    ],
+    "/voting": [
+      "static/chunks/webpack.js",
+      "static/chunks/main.js",
+      "static/chunks/pages/voting.js"
     ]
   },
   "ampFirstPages": []

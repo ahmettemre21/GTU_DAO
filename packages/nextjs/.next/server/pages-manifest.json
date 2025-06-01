@@ -3,5 +3,11 @@
   "/_error": "pages/_error.js",
   "/_document": "pages/_document.js",
   "/": "pages/index.js",
-  "/proposals": "pages/proposals.js"
+  "/dashboard": "pages/dashboard.js",
+  "/voting": "pages/voting.js",
+  "/proposals/create": "pages/proposals/create.js",
+  "/admin": "pages/admin.js",
+  "/proposals": "pages/proposals.js",
+  "/kyc": "pages/kyc.js",
+  "/applications": "pages/applications.js"
 }
