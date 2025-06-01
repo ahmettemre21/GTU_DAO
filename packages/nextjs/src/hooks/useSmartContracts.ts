@@ -1,16 +1,32 @@
 import { useState, useEffect } from 'react'
 import { useAccount, useReadContract, useWriteContract, useWaitForTransactionReceipt } from 'wagmi'
 import { parseAbi, formatEther, parseEther } from 'viem'
-import { getContractAddresses } from '../config/blockchain'
+import { getContractAddresses, STAT_TOKEN_CONFIG } from '../config/blockchain'
 import toast from 'react-hot-toast'
 
-// GTU DAO - Basitleştirilmiş Smart Contract Hook
+// GTU DAO - Smart Contract Hook with STAT Token Integration
 
-// Voting Contract ABI
+// Enhanced Token Contract ABI for STAT Token
+const tokenContractAbi = parseAbi([
+  'function balanceOf(address account) external view returns (uint256)',
+  'function transfer(address to, uint256 amount) external returns (bool)',
+  'function approve(address spender, uint256 amount) external returns (bool)',
+  'function totalSupply() external view returns (uint256)',
+  'function name() external view returns (string)',
+  'function symbol() external view returns (string)',
+  'function decimals() external view returns (uint8)',
+  'function mint(address to, uint256 amount) external',
+  'function burn(uint256 amount) external',
+  'event Transfer(address indexed from, address indexed to, uint256 value)',
+  'event Approval(address indexed owner, address indexed spender, uint256 value)'
+])
+
+// Enhanced Voting Contract ABI
 const votingContractAbi = parseAbi([
   'function createProposal(string memory title, string memory description, uint256 duration) external returns (uint256)',
   'function vote(uint256 proposalId, uint8 choice) external',
   'function getProposal(uint256 proposalId) external view returns (tuple(string title, string description, uint256 forVotes, uint256 againstVotes, uint256 endTime, bool executed))',
+  'function getProposalCount() external view returns (uint256)',
   'function executeProposal(uint256 proposalId) external',
   'function getUserVotingWeight(address user) external view returns (uint256)',
   'function hasUserVoted(uint256 proposalId, address user) external view returns (bool)',
@@ -19,21 +35,18 @@ const votingContractAbi = parseAbi([
   'event ProposalExecuted(uint256 indexed proposalId)'
 ])
 
-// Token Contract ABI  
-const tokenContractAbi = parseAbi([
-  'function balanceOf(address account) external view returns (uint256)',
-  'function transfer(address to, uint256 amount) external returns (bool)',
-  'function approve(address spender, uint256 amount) external returns (bool)',
-  'function totalSupply() external view returns (uint256)',
-  'function mint(address to, uint256 amount) external',
-  'function burn(uint256 amount) external',
-  'event Transfer(address indexed from, address indexed to, uint256 value)',
-  'event Approval(address indexed owner, address indexed spender, uint256 value)'
+// Governance Contract ABI
+const governanceContractAbi = parseAbi([
+  'function getGovernanceStats() external view returns (tuple(uint256 totalProposals, uint256 activeProposals, uint256 totalVotes, uint256 totalParticipants))',
+  'function getUserRole(address user) external view returns (string memory)',
+  'function getTreasuryBalance() external view returns (uint256)',
+  'event RoleAssigned(address indexed user, string role)'
 ])
 
 interface ContractAddresses {
   votingContract: `0x${string}`;
   tokenContract: `0x${string}`;
+  governanceContract: `0x${string}`;
 }
 
 export const useSmartContracts = () => {
@@ -52,66 +65,116 @@ export const useSmartContracts = () => {
     }
   }, [chainId])
 
-  // Get user's voting weight
-  const { data: votingWeight } = useReadContract({
-    address: contracts?.votingContract,
-    abi: votingContractAbi,
-    functionName: 'getUserVotingWeight',
-    args: [address],
-    enabled: !!contracts?.votingContract && !!address
-  })
-
-  // Get user's token balance
+  // STAT Token Data
   const { data: tokenBalance } = useReadContract({
     address: contracts?.tokenContract,
     abi: tokenContractAbi,
     functionName: 'balanceOf',
-    args: [address],
+    args: address ? [address] : undefined,
     enabled: !!contracts?.tokenContract && !!address
-  })
+  } as any)
 
-  // Create Proposal - Basitleştirilmiş versiyon
+  const { data: totalSupply } = useReadContract({
+    address: contracts?.tokenContract,
+    abi: tokenContractAbi,
+    functionName: 'totalSupply',
+    enabled: !!contracts?.tokenContract
+  } as any)
+
+  const { data: tokenName } = useReadContract({
+    address: contracts?.tokenContract,
+    abi: tokenContractAbi,
+    functionName: 'name',
+    enabled: !!contracts?.tokenContract
+  } as any)
+
+  const { data: tokenSymbol } = useReadContract({
+    address: contracts?.tokenContract,
+    abi: tokenContractAbi,
+    functionName: 'symbol',
+    enabled: !!contracts?.tokenContract
+  } as any)
+
+  // Voting Data
+  const { data: votingWeight } = useReadContract({
+    address: contracts?.votingContract,
+    abi: votingContractAbi,
+    functionName: 'getUserVotingWeight',
+    args: address ? [address] : undefined,
+    enabled: !!contracts?.votingContract && !!address
+  } as any)
+
+  const { data: proposalCount } = useReadContract({
+    address: contracts?.votingContract,
+    abi: votingContractAbi,
+    functionName: 'getProposalCount',
+    enabled: !!contracts?.votingContract
+  } as any)
+
+  // Governance Data
+  const { data: governanceStats } = useReadContract({
+    address: contracts?.governanceContract,
+    abi: governanceContractAbi,
+    functionName: 'getGovernanceStats',
+    enabled: !!contracts?.governanceContract
+  } as any)
+
+  const { data: userRole } = useReadContract({
+    address: contracts?.governanceContract,
+    abi: governanceContractAbi,
+    functionName: 'getUserRole',
+    args: address ? [address] : undefined,
+    enabled: !!contracts?.governanceContract && !!address
+  } as any)
+
+  const { data: treasuryBalance } = useReadContract({
+    address: contracts?.governanceContract,
+    abi: governanceContractAbi,
+    functionName: 'getTreasuryBalance',
+    enabled: !!contracts?.governanceContract
+  } as any)
+
+  // Contract Functions
   const createProposal = async (title: string, description: string, duration: number) => {
     try {
       if (!isConnected) {
-        toast.error('Lütfen önce cüzdanınızı bağlayın')
+        toast.error('Please connect your wallet first')
         return
       }
 
       if (!contracts?.votingContract) {
-        toast.error('Smart contract adresi bulunamadı')
+        toast.error('Voting contract address not found')
         return
       }
 
-      // Basit proposal oluşturma
+      const durationInSeconds = duration * 24 * 60 * 60 // Convert days to seconds
+
       writeContract({
         address: contracts.votingContract,
         abi: votingContractAbi,
         functionName: 'createProposal',
-        args: [title, description, BigInt(duration)]
+        args: [title, description, BigInt(durationInSeconds)]
       })
 
-      toast.success('Öneri oluşturuluyor...')
+      toast.success('Creating proposal...')
     } catch (error: any) {
       console.error('Create proposal error:', error)
-      toast.error('Öneri oluşturulamadı: ' + error.message)
+      toast.error('Failed to create proposal: ' + error.message)
     }
   }
 
-  // Vote - Basitleştirilmiş versiyon
   const vote = async (proposalId: number, choice: number) => {
     try {
       if (!isConnected) {
-        toast.error('Lütfen önce cüzdanınızı bağlayın')
+        toast.error('Please connect your wallet first')
         return
       }
 
       if (!contracts?.votingContract) {
-        toast.error('Smart contract adresi bulunamadı')
+        toast.error('Voting contract address not found')
         return
       }
 
-      // Basit oy verme
       writeContract({
         address: contracts.votingContract,
         abi: votingContractAbi,
@@ -119,23 +182,22 @@ export const useSmartContracts = () => {
         args: [BigInt(proposalId), choice]
       })
 
-      toast.success('Oy veriliyor...')
+      toast.success('Submitting vote...')
     } catch (error: any) {
       console.error('Vote error:', error)
-      toast.error('Oy verilemedi: ' + error.message)
+      toast.error('Failed to vote: ' + error.message)
     }
   }
 
-  // Execute proposal
   const executeProposal = async (proposalId: number) => {
     try {
       if (!isConnected) {
-        toast.error('Lütfen önce cüzdanınızı bağlayın')
+        toast.error('Please connect your wallet first')
         return
       }
 
       if (!contracts?.votingContract) {
-        toast.error('Smart contract adresi bulunamadı')
+        toast.error('Voting contract address not found')
         return
       }
 
@@ -146,23 +208,22 @@ export const useSmartContracts = () => {
         args: [BigInt(proposalId)]
       })
 
-      toast.success('Öneri uygulanıyor...')
+      toast.success('Executing proposal...')
     } catch (error: any) {
       console.error('Execute proposal error:', error)
-      toast.error('Öneri uygulanamadı: ' + error.message)
+      toast.error('Failed to execute proposal: ' + error.message)
     }
   }
 
-  // Mint tokens - Basitleştirilmiş versiyon
-  const mintTokens = async (to: string, amount: number) => {
+  const mintSTATTokens = async (to: string, amount: number) => {
     try {
       if (!isConnected) {
-        toast.error('Lütfen önce cüzdanınızı bağlayın')
+        toast.error('Please connect your wallet first')
         return
       }
 
       if (!contracts?.tokenContract) {
-        toast.error('Token contract adresi bulunamadı')
+        toast.error('STAT Token contract address not found')
         return
       }
 
@@ -175,10 +236,38 @@ export const useSmartContracts = () => {
         args: [to as `0x${string}`, parsedAmount]
       })
 
-      toast.success('Token oluşturuluyor...')
+      toast.success(`Minting ${amount} STAT tokens...`)
     } catch (error: any) {
-      console.error('Mint tokens error:', error)
-      toast.error('Token oluşturulamadı: ' + error.message)
+      console.error('Mint STAT tokens error:', error)
+      toast.error('Failed to mint STAT tokens: ' + error.message)
+    }
+  }
+
+  const transferSTATTokens = async (to: string, amount: number) => {
+    try {
+      if (!isConnected) {
+        toast.error('Please connect your wallet first')
+        return
+      }
+
+      if (!contracts?.tokenContract) {
+        toast.error('STAT Token contract address not found')
+        return
+      }
+
+      const parsedAmount = parseEther(amount.toString())
+
+      writeContract({
+        address: contracts.tokenContract,
+        abi: tokenContractAbi,
+        functionName: 'transfer',
+        args: [to as `0x${string}`, parsedAmount]
+      })
+
+      toast.success(`Transferring ${amount} STAT tokens...`)
+    } catch (error: any) {
+      console.error('Transfer STAT tokens error:', error)
+      toast.error('Failed to transfer STAT tokens: ' + error.message)
     }
   }
 
@@ -190,21 +279,36 @@ export const useSmartContracts = () => {
     isConnected,
     chainId,
     
-    // Contract data
-    votingWeight: votingWeight ? formatEther(votingWeight) : '0',
-    tokenBalance: tokenBalance ? formatEther(tokenBalance) : '0',
+    // STAT Token Data
+    tokenBalance: tokenBalance ? formatEther(tokenBalance as bigint) : '0',
+    totalSupply: totalSupply ? formatEther(totalSupply as bigint) : '0',
+    tokenName: (tokenName as string) || STAT_TOKEN_CONFIG.name,
+    tokenSymbol: (tokenSymbol as string) || STAT_TOKEN_CONFIG.symbol,
+    
+    // Voting Data
+    votingWeight: votingWeight ? formatEther(votingWeight as bigint) : '0',
+    proposalCount: proposalCount ? Number(proposalCount) : 0,
+    
+    // Governance Data
+    governanceStats,
+    userRole: (userRole as string) || 'GENERAL_MEMBER',
+    treasuryBalance: treasuryBalance ? formatEther(treasuryBalance as bigint) : '0',
     
     // Transaction state
     isPending,
     isConfirming,
     isConfirmed,
-    hash,
+    transactionHash: hash,
     error,
     
-    // Contract functions
+    // Contract Functions
     createProposal,
     vote,
     executeProposal,
-    mintTokens
+    mintSTATTokens,
+    transferSTATTokens,
+    
+    // Constants
+    STAT_TOKEN_CONFIG
   }
 } 

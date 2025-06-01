@@ -33,6 +33,14 @@
     --chart-3: #F59E0B;
     --chart-4: #8B5CF6;
     --chart-5: #EF4444;
+    --sidebar-background: #1F2937;
+    --sidebar-foreground: #F3F4F6;
+    --sidebar-primary: #00C4FF;
+    --sidebar-primary-foreground: #0B0E12;
+    --sidebar-accent: #374151;
+    --sidebar-accent-foreground: #F3F4F6;
+    --sidebar-border: #374151;
+    --sidebar-ring: #00C4FF;
   }
 
   html {
@@ -42,6 +50,15 @@
   body {
     @apply bg-[#0B0E12] text-[#F3F4F6] min-h-screen;
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground;
   }
 }
 
@@ -85,7 +102,7 @@
 
 .card-hover:hover {
   transform: translateY(-4px);
-  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+  box-shadow: 0 20px 25px -5px rgba(0, 196, 255, 0.1), 0 10px 10px -5px rgba(0, 196, 255, 0.04);
 }
 
 /* Scrollbar Styling */
@@ -279,5 +296,11 @@
   
   .no-print {
     display: none !important;
+  }
+}
+
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
   }
 } 

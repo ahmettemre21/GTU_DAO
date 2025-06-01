@@ -16,5 +16,9 @@
   },
   "devDependencies": {
     "typescript": "^5.0.0"
+  },
+  "dependencies": {
+    "@radix-ui/react-label": "^2.1.7",
+    "react-hook-form": "^7.56.4"
   }
-} 
+}

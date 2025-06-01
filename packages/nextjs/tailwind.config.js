@@ -84,6 +84,26 @@ module.exports = {
           '0%': { backgroundPosition: '200% 0' },
           '100%': { backgroundPosition: '-200% 0' },
         },
+        bounce: {
+          '0%, 100%': {
+            transform: 'translateY(-25%)',
+            animationTimingFunction: 'cubic-bezier(0.8,0,1,1)',
+          },
+          '50%': {
+            transform: 'none',
+            animationTimingFunction: 'cubic-bezier(0,0,0.2,1)',
+          },
+        },
+        pulse: {
+          '50%': {
+            opacity: '0.5',
+          },
+        },
+        spin: {
+          'to': {
+            transform: 'rotate(360deg)',
+          },
+        },
       },
       backdropBlur: {
         xs: '2px',
@@ -91,8 +111,25 @@ module.exports = {
       boxShadow: {
         'glow': '0 0 20px rgba(0, 196, 255, 0.3)',
         'glow-lg': '0 0 30px rgba(0, 196, 255, 0.5)',
+        'gtu-shadow': '0 10px 25px -3px rgba(0, 196, 255, 0.1), 0 4px 6px -2px rgba(0, 196, 255, 0.05)',
       },
     },
   },
   plugins: [require("tailwindcss-animate")],
+  safelist: [
+    'bg-gradient-to-r',
+    'bg-gradient-to-br',
+    'bg-gradient-to-l',
+    'from-[#00C4FF]',
+    'to-[#0080CC]',
+    'via-[#00C4FF]',
+    'from-white',
+    'to-white',
+    'animate-bounce',
+    'animate-pulse',
+    'animate-glow',
+    'animate-float',
+    'bg-clip-text',
+    'text-transparent',
+  ],
 } 
